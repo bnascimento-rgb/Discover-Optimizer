@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discover Title Optimizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Cole um título e receba variações otimizadas para Google Discover (sem clickbait)">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <header class="max-w-4xl mx-auto px-4 pt-10 pb-6">
+    <h1 class="text-3xl font-bold tracking-tight">Discover Title Optimizer</h1>
+    <p class="text-slate-600 mt-2">Cole um título e gere variações otimizadas para <span class="font-medium">Google Discover</span>, com foco em CTR, clareza e fidelidade ao conteúdo.</p>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div class="grid gap-4 md:grid-cols-[1fr_280px]">
+        <div>
+          <label class="block text-sm font-medium mb-2" for="seed">Título original</label>
+          <textarea id="seed" class="w-full h-28 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-base p-3" placeholder="Ex.: Novo ensino médio no ES terá mais aulas de disciplinas tradicionais; entenda"></textarea>
+        </div>
+        <div class="grid gap-4 content-start">
+          <div>
+            <label class="block text-sm font-medium mb-2" for="hint">Foco (opcional)</label>
+            <input id="hint" type="text" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="Ex.: ensino médio no ES" />
+            <p class="text-xs text-slate-500 mt-1">Use quando o título começa com palavras genéricas ("Novo", "Veja", etc.).</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1" for="qty">Sugestões</label>
+              <select id="qty" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                <option>5</option>
+                <option selected>10</option>
+                <option>15</option>
+                <option>20</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="len">Tamanho alvo</label>
+              <select id="len" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="45-65" selected>45–65</option>
+                <option value="40-70">40–70</option>
+                <option value="35-75">35–75</option>
+              </select>
+            </div>
+          </div>
+          <button id="go" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 text-white font-medium px-4 py-2.5 hover:bg-indigo-700 active:bg-indigo-800 transition">Gerar variações</button>
+        </div>
+      </div>
+
+      <details class="mt-6">
+        <summary class="cursor-pointer text-sm text-slate-600">Regras de otimização (resumo)</summary>
+        <ul class="list-disc ml-6 mt-3 text-sm text-slate-600 space-y-1">
+          <li>Ideal de 45–65 caracteres; entidade no início quando possível.</li>
+          <li>Verbo ativo; curiosidade legítima; sem clickbait.</li>
+          <li>Formatos: "o que muda", "como funciona", "X motivos", "vale a pena?", "guia rápido", "quando começa".</li>
+          <li>Atualidade/região quando relevante. Sem inventar números.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section class="mt-8 hidden" id="resultsWrap">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-semibold">Sugestões</h2>
+        <div class="flex gap-2">
+          <button id="copyAll" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Copiar tudo</button>
+          <button id="downloadCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Baixar CSV</button>
+        </div>
+      </div>
+      <ol id="results" class="space-y-3"></ol>
+    </section>
+  </main>
+
+  <footer class="max-w-4xl mx-auto px-4 pb-10 text-xs text-slate-500">
+    <p>Feito para testes: gera variações otimizadas para Discover com heurísticas locais (não usa servidor).</p>
+  </footer>
+
+  <script>
+    // ===== Config =====
+    const STOP = new Set(["o","a","os","as","de","do","da","dos","das","no","na","nos","nas","em","para","por","um","uma","e","ou","com","sem","que","mais","menos","sobre","até","entre","se","novo","nova","veja","entenda","descubra","saiba","agora","hoje"]);
+
+    function clean(s){return s.trim().replace(/\s+/g,' ')}
+    function hasNumber(s){return /(\d+%?)/.test(s)}
+
+    function extractKeywords(seed){
+      const tokens = (seed.match(/[A-Za-zÀ-ÿ0-9]+/g) || []);
+      const words = tokens.filter(Boolean);
+      const ngrams = [];
+      for (const n of [3,2]){
+        for (let i=0; i<=words.length-n; i++){
+          const chunk = words.slice(i,i+n);
+          if (chunk.every(w=>!STOP.has(w.toLowerCase()))){
+            const phrase = chunk.join(' ');
+            if (!/^\d+%?$/.test(phrase)) ngrams.push(phrase);
+          }
+        }
+      }
+      const singles = words.filter(w=>!STOP.has(w.toLowerCase()) && w.length>3);
+      const seen = new Set();
+      const out = [];
+      for (const x of [...ngrams, ...singles]){
+        const xl = x.toLowerCase();
+        if (!seen.has(xl)){ seen.add(xl); out.push(x) }
+      }
+      return out.slice(0,5);
+    }
+
+    function score(title, topicKeywords=[], minLen=40, maxLen=68){
+      const t = title.toLowerCase();
+      let s = 0;
+      const L = title.length;
+      s += (L>=minLen && L<=maxLen) ? 2 : -1; // comprimento
+      if (/\b(veja|entenda|confira|saiba|descubra|aprenda|compare|evite|garanta|calcule|planeje|atualize)\b/.test(t)) s+=2; // verbo ativo
+      if (/(\b\d+%?|\btop\b|\bguia\b|passo a passo|checklist)/.test(t)) s+=2; // números/guia
+      for (const kw of topicKeywords){ if (kw && t.includes(kw.toLowerCase())) s+=1 }
+      if (/você não vai acreditar|chocante|imperdível/.test(t)) s-=4; // evita clickbait
+      const words = t.split(/\s+/);
+      if (new Set(words).size !== words.length) s-=1; // duplicação
+      if (topicKeywords.some(kw=>kw && t.startsWith(kw.toLowerCase()))) s+=1; // tema no início
+      return s;
+    }
+
+    function classifyAngle(t){
+      const tl = t.toLowerCase();
+      if (/\bcomo\b|aprenda|passo a passo/.test(tl)) return "How-to";
+      if (/\b\d+|top|pontos|checklist/.test(tl)) return "Lista/Dados";
+      if (/vale a pena|antes x depois|compare/.test(tl)) return "Comparação/Análise";
+      if (/o que muda|explicado|entenda|guia|regras/.test(tl)) return "Guia/Explicação";
+      if (/\?|quem|quando|quanto/.test(tl)) return "Pergunta";
+      return "Genérico";
+    }
+
+    function generate(seed, entityHint=null, minLen=40, maxLen=68){
+      seed = clean(seed);
+      const ents = extractKeywords(seed);
+      let ent = entityHint || ents.find(e=>!/^novo|veja|entenda|descubra|saiba$/i.test(e)) || ents[0] || seed;
+
+      const molds = [
+        "{ent}: o que muda {contexto}",
+        "{ent}: como {beneficio}",
+        "{ent}: {n} pontos para {beneficio}",
+        "Como {beneficio} com {ent}",
+        "{acao} {beneficio} com {ent}",
+        "{ent} explicado: {beneficio_curto}",
+        "{ent}: quando entra em vigor e quem é afetado",
+        "{ent}: {comparacao} vale a pena?",
+        "{ent}: {guia}",
+        "{ent}: {pergunta}",
+        "{ent}: impactos em {segmento}",
+      ];
+      if (hasNumber(seed)) molds.push("{ent}: {n}% dos usuários serão afetados? (entenda)");
+
+      const slots = {
+        contexto: ["no Brasil","a partir deste mês","em 2025","para o dia a dia"],
+        beneficio: ["pagar menos","se adaptar às novas regras","evitar surpresas","planejar suas compras","aplicar na prática"],
+        beneficio_curto: ["o que muda e quando","regras em 1 minuto","quem paga e quanto"],
+        acao: ["Entenda","Veja","Aprenda a","Descubra como"],
+        comparacao: ["antes x depois","agora","com e sem a mudança"],
+        guia: ["guia rápido","passo a passo","checklist essencial"],
+        pergunta: ["quem paga, quanto e quando","vai encarecer mesmo?","o que muda para você"],
+        segmento: ["estudantes","professores","pequenos e-commerces","compras internacionais","marketplaces"],
+        n: ["3","5","7"],
+        ent: [ent]
+      };
+
+      const out = new Set();
+      for (const mold of molds){
+        const keys = [...mold.matchAll(/\{(\w+)\}/g)].map(m=>m[1]);
+        const lists = keys.map(k=>slots[k]);
+        // produto cartesiano simples
+        function loop(idx, acc){
+          if (idx===lists.length){
+            let t = mold;
+            keys.forEach((k,i)=>{ t = t.replace(`{${k}}`, acc[i]) });
+            t = clean(t);
+            t = t.charAt(0).toUpperCase() + t.slice(1);
+            out.add(t);
+            return;
+          }
+          for (const item of lists[idx]) loop(idx+1, [...acc, item]);
+        }
+        loop(0, []);
+      }
+      out.add(seed);
+      out.add(clean(seed.replace(/:.*/, "")) + ": o que muda e quando");
+
+      const kw = ents.length? ents : seed.split(/\s+/).slice(0,3);
+      const scored = [...out].map(t=>({
+        title: t,
+        score: score(t, kw, minLen, maxLen),
+        angle: classifyAngle(t),
+        len: t.length
+      }))
+      .filter(x=>x.len>=30 && x.len<=90)
+      .sort((a,b)=> b.score - a.score);
+
+      return scored;
+    }
+
+    function justify(title){
+      const tl = title.toLowerCase();
+      const parts = [];
+      if (/(o que muda|explicado|entenda|guia)/.test(tl)) parts.push("explica o essencial");
+      if (/\bcomo\b|passo a passo/.test(tl)) parts.push("promete how-to prático");
+      if (/\b\d+|pontos|checklist|top/.test(tl)) parts.push("estrutura de lista atrativa");
+      if (/quando|quem|quanto|\?/.test(tl)) parts.push("curiosidade legítima");
+      if (/no brasil|em /.test(tl)) parts.push("contexto/localização clara");
+      if (/vale a pena/.test(tl)) parts.push("ângulo de decisão/avaliação");
+      if (parts.length===0) parts.push("clareza e relevância para Discover");
+      return parts.join(" · ");
+    }
+
+    function toCSV(rows){
+      const header = ["title","score","len","angle"];
+      const esc = v => '"'+String(v).replaceAll('"','""')+'"';
+      const lines = [header.join(',')];
+      for (const r of rows){
+        lines.push([esc(r.title), r.score, r.len, esc(r.angle)].join(','));
+      }
+      return lines.join('\n');
+    }
+
+    function copyAllText(rows){
+      const text = rows.map((r,i)=>`${i+1}. ${r.title}`).join('\n');
+      navigator.clipboard.writeText(text);
+    }
+
+    // ===== UI =====
+    const seedEl = document.getElementById('seed');
+    const hintEl = document.getElementById('hint');
+    const lenEl = document.getElementById('len');
+    const qtyEl = document.getElementById('qty');
+    const goEl = document.getElementById('go');
+    const results = document.getElementById('results');
+    const resultsWrap = document.getElementById('resultsWrap');
+    const copyAllBtn = document.getElementById('copyAll');
+    const dlBtn = document.getElementById('downloadCsv');
+
+    function parseLenRange(){
+      const [min,max] = lenEl.value.split('-').map(n=>parseInt(n,10));
+      return {min,max};
+    }
+
+    function render(){
+      const seed = seedEl.value.trim();
+      if (!seed){
+        resultsWrap.classList.add('hidden');
+        return;
+      }
+      const {min,max} = parseLenRange();
+      const rows = generate(seed, hintEl.value.trim()||null, min, max);
+      const top = rows.slice(0, parseInt(qtyEl.value,10));
+
+      results.innerHTML = '';
+      top.forEach((r, idx)=>{
+        const li = document.createElement('li');
+        li.className = 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+        li.innerHTML = `
+          <div class="flex items-start justify-between gap-4">
+            <div class="text-sm text-slate-500">#${idx+1}</div>
+            <div class="shrink flex-1">
+              <div class="font-medium leading-snug">${r.title}</div>
+              <div class="text-xs text-slate-500 mt-1">${justify(r.title)}</div>
+            </div>
+            <div class="text-right text-xs text-slate-500">
+              <div>Score: <span class="font-medium">${r.score}</span></div>
+              <div>${r.len} caracteres</div>
+              <div>${r.angle}</div>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button class="copy px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-sm">Copiar</button>
+          </div>
+        `;
+        li.querySelector('.copy').addEventListener('click', ()=>{
+          navigator.clipboard.writeText(r.title);
+          li.querySelector('.copy').textContent = 'Copiado!';
+          setTimeout(()=> li.querySelector('.copy').textContent = 'Copiar', 1200);
+        })
+        results.appendChild(li);
+      })
+
+      resultsWrap.classList.remove('hidden');
+
+      // copy all & CSV
+      copyAllBtn.onclick = ()=> copyAllText(top);
+      dlBtn.onclick = ()=>{
+        const csv = toCSV(top);
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'titulos_discover.csv'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    goEl.addEventListener('click', render);
+    seedEl.addEventListener('keydown', (e)=>{ if (e.key==='Enter' && (e.metaKey||e.ctrlKey)) render() });
+  </script>
+</body>
+</html>
