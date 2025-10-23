@@ -6,16 +6,19 @@
   <title>Discover Title Optimizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="description" content="Cole um título e receba variações otimizadas para Google Discover (sem clickbait)">
+  <style>
+    textarea{tab-size:2}
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
-  <header class="max-w-4xl mx-auto px-4 pt-10 pb-6">
+  <header class="max-w-5xl mx-auto px-4 pt-10 pb-6">
     <h1 class="text-3xl font-bold tracking-tight">Discover Title Optimizer</h1>
     <p class="text-slate-600 mt-2">Cole um título e gere variações otimizadas para <span class="font-medium">Google Discover</span>, com foco em CTR, clareza e fidelidade ao conteúdo.</p>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 pb-16">
+  <main class="max-w-5xl mx-auto px-4 pb-16">
     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="grid gap-4 md:grid-cols-[1fr_280px]">
+      <div class="grid gap-4 md:grid-cols-[1fr_320px]">
         <div>
           <label class="block text-sm font-medium mb-2" for="seed">Título original</label>
           <textarea id="seed" class="w-full h-28 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-base p-3" placeholder="Ex.: Novo ensino médio no ES terá mais aulas de disciplinas tradicionais; entenda"></textarea>
@@ -60,6 +63,19 @@
       </details>
     </section>
 
+    <!-- ===== CSV CATALOG ===== -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-8">
+      <details open>
+        <summary class="cursor-pointer text-sm text-slate-600">Catálogo via CSV (edite/cole aqui e clique em "Aplicar catálogo")</summary>
+        <p class="text-xs text-slate-500 mt-2">Formato: <code>slot;texto;tags|separadas|por|pipe</code>. Linhas iniciadas com <code>#</code> são ignoradas.</p>
+        <textarea id="csvInput" class="w-full h-56 mt-3 rounded-xl border-slate-300 p-3 font-mono text-sm"></textarea>
+        <div class="mt-3 flex gap-2">
+          <button id="applyCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Aplicar catálogo</button>
+          <button id="resetCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Restaurar exemplo</button>
+        </div>
+      </details>
+    </section>
+
     <section class="mt-8 hidden" id="resultsWrap">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-xl font-semibold">Sugestões</h2>
@@ -72,12 +88,57 @@
     </section>
   </main>
 
-  <footer class="max-w-4xl mx-auto px-4 pb-10 text-xs text-slate-500">
-    <p>Feito para testes: gera variações otimizadas para Discover com heurísticas locais (não usa servidor).</p>
+  <footer class="max-w-5xl mx-auto px-4 pb-10 text-xs text-slate-500">
+    <p>Frontend estático. Você pode ampliar o catálogo colando CSV acima. Sem back-end.</p>
   </footer>
 
   <script>
-    // ===== Config =====
+    // ===== CSV DEFAULT (pode colar o seu por cima) =====
+    const CSV_DEFAULT = `
+# slot;texto;tags
+contexto;no Brasil;locale
+contexto;em São Paulo;locale
+contexto;no ES;locale
+contexto;a partir deste mês;time|news
+contexto;neste ano;time
+contexto;em 2025;time
+contexto;na compra do dia a dia;shopping|consumer
+beneficio;pagar menos;cost|consumer|shopping
+beneficio;escolher melhor;guide|list|consumer
+beneficio;se adaptar às novas regras;policy|news
+beneficio;evitar arrependimentos;guide|compare
+beneficio;acertar na compra;shopping|guide
+beneficio_curto;o que muda e quando;news|time|policy
+beneficio_curto;regras em 1 minuto;guide|policy
+beneficio_curto;quem paga e quanto;policy|cost
+beneficio_curto;como escolher sem erro;guide|shopping
+acao;Entenda;news|policy
+acao;Veja;generic
+acao;Aprenda a;guide
+acao;Descubra como;guide|list
+comparacao;antes x depois;news|policy|compare
+comparacao;agora;news|time
+comparacao;com e sem a mudança;compare|policy
+comparacao;preço x qualidade;compare|cost|shopping
+guia;guia rápido;guide
+guia;passo a passo;guide
+guia;checklist essencial;guide|list
+guia;guia de compra;guide|shopping
+pergunta;vale a pena agora?;compare|news|consumer
+pergunta;o que muda para você;news|policy|consumer
+pergunta;quais os erros mais comuns;guide|list
+pergunta;como escolher o melhor;guide|list|shopping
+segmento;consumidores;consumer
+segmento;compras internacionais;shopping
+segmento;pequenos e-commerces;shopping
+segmento;estudantes;education
+segmento;amantes de vinho;alcohol|consumer
+n;3;list
+n;5;list
+n;7;list
+`;
+
+    // ===== Helpers =====
     const STOP = new Set(["o","a","os","as","de","do","da","dos","das","no","na","nos","nas","em","para","por","um","uma","e","ou","com","sem","que","mais","menos","sobre","até","entre","se","novo","nova","veja","entenda","descubra","saiba","agora","hoje"]);
 
     function clean(s){return s.trim().replace(/\s+/g,' ')}
@@ -108,8 +169,7 @@
 
     function score(title, topicKeywords=[], minLen=40, maxLen=68){
       const t = title.toLowerCase();
-      let s = 0;
-      const L = title.length;
+      let s = 0; const L = title.length;
       s += (L>=minLen && L<=maxLen) ? 2 : -1; // comprimento
       if (/\b(veja|entenda|confira|saiba|descubra|aprenda|compare|evite|garanta|calcule|planeje|atualize)\b/.test(t)) s+=2; // verbo ativo
       if (/(\b\d+%?|\btop\b|\bguia\b|passo a passo|checklist)/.test(t)) s+=2; // números/guia
@@ -131,52 +191,158 @@
       return "Genérico";
     }
 
+    // ===== INTENTS (detecção simples) =====
+    const RX = {
+      list: /(^\d+\b|\btop\b|\bmelhores\b|\branking\b)/i,
+      news: /\b(agora|nesta semana|hoje|lança|anuncia|divulga|entra em vigor|valerá|começa)\b/i,
+      policy: /\b(lei|projeto|regra|imposto|tax(a|e)|tribut|alíquota|governo|ministério)\b/i,
+      money: /\b(preço|preços|barato|caro|cust(o|os)|pagar|economi|desconto|promo|orçamento)\b/i,
+      compare: /\b(vs|x|versus|compar(a|ação)|vale a pena)\b/i,
+      howto: /\b(como|passo a passo|guia|manual|checklist|dicas)\b/i,
+      date: /\b(202[4-9]|202\d|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|hoje|amanhã)\b/i,
+      place: /\b(brasil|são paulo|sp|rj|rio de janeiro|mg|es|vitória|porto alegre|curitiba|lisboa|portugal)\b/i,
+      alcohol: /\b(vinho|vinhos|cerveja|whisky|destilado|espumante)\b/i,
+      shopping: /\b(compr(a|as)|loja|e-commerce|marketplace|amazon|magalu|shein|aliexpress)\b/i,
+    };
+
+    function detectIntents(seed){
+      const t = seed.toLowerCase();
+      const intents = new Set();
+      if (RX.list.test(t)) intents.add("list");
+      if (RX.news.test(t)) intents.add("news");
+      if (RX.policy.test(t)) intents.add("policy");
+      if (RX.money.test(t)) intents.add("cost");
+      if (RX.compare.test(t)) intents.add("compare");
+      if (RX.howto.test(t)) intents.add("guide");
+      if (RX.date.test(t)) intents.add("time");
+      if (RX.place.test(t)) intents.add("locale");
+      if (RX.alcohol.test(t)) intents.add("alcohol");
+      if (RX.shopping.test(t)) intents.add("shopping");
+      intents.add("consumer");
+      return [...intents];
+    }
+
+    // ===== CSV → catálogo SLOT =====
+    function parseCSV(text){
+      const rows = [];
+      text.split(/\r?\n/).forEach(line=>{
+        const l = line.trim();
+        if (!l || l.startsWith('#')) return;
+        const parts = l.split(';');
+        if (parts.length < 2) return;
+        const slot = parts[0].trim();
+        const texto = parts[1].trim();
+        const tags = (parts[2]||'').split('|').map(s=>s.trim()).filter(Boolean);
+        rows.push({slot, t: texto, tags});
+      });
+      const SLOT = {};
+      for (const r of rows){
+        if (!SLOT[r.slot]) SLOT[r.slot] = [];
+        SLOT[r.slot].push({t: r.t, tags: r.tags});
+      }
+      return SLOT;
+    }
+
+    function tokenSet(str){
+      return new Set((str.toLowerCase().match(/[a-zà-ÿ0-9]+/g) || []).filter(w=>w.length>2));
+    }
+
+    function compatScore(item, intents, seed){
+      let s = 0;
+      for (const tag of item.tags||[]) if (intents.includes(tag)) s += 2;
+      const A = tokenSet(item.t); const B = tokenSet(seed);
+      let overlap = 0; for (const w of A) if (B.has(w)) overlap++;
+      s += Math.min(overlap,2);
+      if (intents.includes("list") && /guia|critérios|checklist|pontos|passo/.test(item.t)) s += 1;
+      if (intents.includes("policy") && /regra|muda|quando|quem paga/.test(item.t)) s += 1;
+      if (intents.includes("shopping") && /compra|preço|vale a pena/.test(item.t)) s += 1;
+      return s;
+    }
+
+    function pickTop(slotArr, intents, seed, n=3){
+      if (!Array.isArray(slotArr)) return [];
+      return [...slotArr]
+        .map(it => ({...it, _s: compatScore(it, intents, seed)}))
+        .sort((a,b)=> b._s - a._s)
+        .slice(0, n)
+        .map(it => it.t);
+    }
+
+    function hasPercentContext(s){
+      const t = s.toLowerCase();
+      return /%|por cento|imposto|taxa|tribut|juros|infla|aumento|queda|pesquisa|levantamento|usuári|consumidor/.test(t);
+    }
+
+    // ===== Geração =====
+    let CATALOG = parseCSV(CSV_DEFAULT);
+
+    function buildSlots(seed, entity){
+      const intents = detectIntents(seed);
+      return {
+        contexto: pickTop(CATALOG.contexto, intents, seed, 3),
+        beneficio: pickTop(CATALOG.beneficio, intents, seed, 3),
+        beneficio_curto: pickTop(CATALOG.beneficio_curto, intents, seed, 3),
+        acao: pickTop(CATALOG.acao, intents, seed, 3),
+        comparacao: pickTop(CATALOG.comparacao, intents, seed, 3),
+        guia: pickTop(CATALOG.guia, intents, seed, 3),
+        pergunta: pickTop(CATALOG.pergunta, intents, seed, 3),
+        segmento: pickTop(CATALOG.segmento, intents, seed, 3),
+        n: pickTop(CATALOG.n, intents, seed, 3),
+        ent: [entity]
+      };
+    }
+
+    function classifyEntity(seed, hint){
+      const ents = extractKeywords(seed);
+      let ent = hint || ents.find(e=>!/^(novo|veja|entenda|descubra|saiba)$/i.test(e)) || ents[0] || seed;
+      return ent.replace(/^\d+\s+/, '');
+    }
+
     function generate(seed, entityHint=null, minLen=40, maxLen=68){
       seed = clean(seed);
-      const ents = extractKeywords(seed);
-      let ent = entityHint || ents.find(e=>!/^novo|veja|entenda|descubra|saiba$/i.test(e)) || ents[0] || seed;
+      const ent = classifyEntity(seed, entityHint);
+      const slots = buildSlots(seed, ent);
 
-      const molds = [
-        "{ent}: o que muda {contexto}",
-        "{ent}: como {beneficio}",
-        "{ent}: {n} pontos para {beneficio}",
-        "Como {beneficio} com {ent}",
-        "{acao} {beneficio} com {ent}",
-        "{ent} explicado: {beneficio_curto}",
-        "{ent}: quando entra em vigor e quem é afetado",
-        "{ent}: {comparacao} vale a pena?",
-        "{ent}: {guia}",
-        "{ent}: {pergunta}",
-        "{ent}: impactos em {segmento}",
-      ];
-      if (hasNumber(seed)) molds.push("{ent}: {n}% dos usuários serão afetados? (entenda)");
-
-      const slots = {
-        contexto: ["no Brasil","a partir deste mês","em 2025","para o dia a dia"],
-        beneficio: ["pagar menos","se adaptar às novas regras","evitar surpresas","planejar suas compras","aplicar na prática"],
-        beneficio_curto: ["o que muda e quando","regras em 1 minuto","quem paga e quanto"],
-        acao: ["Entenda","Veja","Aprenda a","Descubra como"],
-        comparacao: ["antes x depois","agora","com e sem a mudança"],
-        guia: ["guia rápido","passo a passo","checklist essencial"],
-        pergunta: ["quem paga, quanto e quando","vai encarecer mesmo?","o que muda para você"],
-        segmento: ["estudantes","professores","pequenos e-commerces","compras internacionais","marketplaces"],
-        n: ["3","5","7"],
-        ent: [ent]
-      };
+      const isListSeed = /(^\d+\b|\btop\b|\bmelhores\b)/i.test(seed);
+      let molds;
+      if (isListSeed) {
+        molds = [
+          "{ent}: nossa seleção comentada",
+          "{ent}: como escolher o melhor (guia rápido)",
+          "{ent}: {n} critérios essenciais antes de decidir",
+          "{ent}: comparação de prós e contras",
+          "{ent}: preços e o que considerar em {contexto}",
+          "{ent}: perguntas-chave antes de comprar",
+          "{ent}: vale a pena? {comparacao}",
+        ];
+      } else {
+        molds = [
+          "{ent}: o que muda {contexto}",
+          "{ent}: como {beneficio}",
+          "{ent}: {n} pontos para {beneficio}",
+          "Como {beneficio} com {ent}",
+          "{acao} {beneficio} com {ent}",
+          "{ent} explicado: {beneficio_curto}",
+          "{ent}: quando entra em vigor e quem é afetado",
+          "{ent}: {comparacao} vale a pena?",
+          "{ent}: {guia}",
+          "{ent}: {pergunta}",
+          "{ent}: impactos em {segmento}",
+        ];
+        if (hasPercentContext(seed)) {
+          molds.push("{ent}: {n}% dos usuários serão afetados? (entenda)");
+        }
+      }
 
       const out = new Set();
       for (const mold of molds){
         const keys = [...mold.matchAll(/\{(\w+)\}/g)].map(m=>m[1]);
-        const lists = keys.map(k=>slots[k]);
-        // produto cartesiano simples
+        const lists = keys.map(k=>slots[k]||[""]);
         function loop(idx, acc){
           if (idx===lists.length){
-            let t = mold;
-            keys.forEach((k,i)=>{ t = t.replace(`{${k}}`, acc[i]) });
-            t = clean(t);
-            t = t.charAt(0).toUpperCase() + t.slice(1);
-            out.add(t);
-            return;
+            let t = mold; keys.forEach((k,i)=>{ t = t.replace(`{${k}}`, acc[i]) });
+            t = clean(t); t = t.charAt(0).toUpperCase() + t.slice(1);
+            out.add(t); return;
           }
           for (const item of lists[idx]) loop(idx+1, [...acc, item]);
         }
@@ -185,7 +351,7 @@
       out.add(seed);
       out.add(clean(seed.replace(/:.*/, "")) + ": o que muda e quando");
 
-      const kw = ents.length? ents : seed.split(/\s+/).slice(0,3);
+      const kw = extractKeywords(seed);
       const scored = [...out].map(t=>({
         title: t,
         score: score(t, kw, minLen, maxLen),
@@ -215,9 +381,7 @@
       const header = ["title","score","len","angle"];
       const esc = v => '"'+String(v).replaceAll('"','""')+'"';
       const lines = [header.join(',')];
-      for (const r of rows){
-        lines.push([esc(r.title), r.score, r.len, esc(r.angle)].join(','));
-      }
+      for (const r of rows){ lines.push([esc(r.title), r.score, r.len, esc(r.angle)].join(',')); }
       return lines.join('\n');
     }
 
@@ -237,6 +401,18 @@
     const copyAllBtn = document.getElementById('copyAll');
     const dlBtn = document.getElementById('downloadCsv');
 
+    const csvInput = document.getElementById('csvInput');
+    const applyCsv = document.getElementById('applyCsv');
+    const resetCsv = document.getElementById('resetCsv');
+    csvInput.value = CSV_DEFAULT.trim();
+
+    function applyCatalog(){
+      CATALOG = parseCSV(csvInput.value);
+    }
+    applyCsv.addEventListener('click', ()=>{ applyCatalog(); alert('Catálogo atualizado!'); });
+    resetCsv.addEventListener('click', ()=>{ csvInput.value = CSV_DEFAULT.trim(); applyCatalog(); });
+    applyCatalog();
+
     function parseLenRange(){
       const [min,max] = lenEl.value.split('-').map(n=>parseInt(n,10));
       return {min,max};
@@ -244,10 +420,7 @@
 
     function render(){
       const seed = seedEl.value.trim();
-      if (!seed){
-        resultsWrap.classList.add('hidden');
-        return;
-      }
+      if (!seed){ resultsWrap.classList.add('hidden'); return; }
       const {min,max} = parseLenRange();
       const rows = generate(seed, hintEl.value.trim()||null, min, max);
       const top = rows.slice(0, parseInt(qtyEl.value,10));
@@ -283,7 +456,6 @@
 
       resultsWrap.classList.remove('hidden');
 
-      // copy all & CSV
       copyAllBtn.onclick = ()=> copyAllText(top);
       dlBtn.onclick = ()=>{
         const csv = toCSV(top);
