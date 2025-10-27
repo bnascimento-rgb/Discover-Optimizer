@@ -328,60 +328,84 @@
       return s;
     }
 
-    // ===== SELEÇÃO DE MOLDES POR CONTEXTO =====
-    function selectMolds(seed, intents) {
-      const isListSeed = /(^\d+\b|\btop\b|\bmelhores\b)/i.test(seed);
+    // ===== GERAÇÃO INTELIGENTE DE VARIAÇÕES =====
+    function generateSmartVariations(seed, entity, intents) {
+      const variations = [];
+      const sl = seed.toLowerCase();
       
-      if (isListSeed) {
-        return [
-          "{ent}: nossa seleção comentada",
-          "{ent}: como escolher o melhor (guia rápido)",
-          "{ent}: {n} critérios essenciais antes de decidir",
-          "{ent}: comparação de prós e contras",
-          "Como escolher {ent}: {guia}",
-          "{ent}: {pergunta}",
-        ];
+      // Extrai informações-chave do título original
+      const hasDate = /\b(data|prazo|começa|entra em vigor|a partir de|até|quando)\b/i.test(seed);
+      const hasChange = /\b(muda|mudança|novo|nova|alteração|reforma)\b/i.test(seed);
+      const hasNumber = /\d+/.test(seed);
+      const hasQuestion = seed.includes('?');
+      
+      // VARIAÇÃO 1: Mantém o original limpo
+      variations.push(seed);
+      
+      // VARIAÇÃO 2: Versão direta com foco
+      if (hasChange && hasDate) {
+        variations.push(`${entity}: o que muda e quando`);
+        variations.push(`${entity} ${intents.includes("locale") ? "no ES" : ""}: mudanças explicadas`);
       }
       
-      if (intents.includes("policy") && intents.includes("news")) {
-        return [
-          "{ent}: o que muda {contexto}",
-          "{ent}: quando entra em vigor e quem é afetado",
-          "{ent} explicado: {beneficio_curto}",
-          "{ent}: {comparacao} vale a pena?",
-          "Como {beneficio} com {ent}",
-          "{ent}: {pergunta}",
-        ];
+      // VARIAÇÃO 3: Formato pergunta
+      if (!hasQuestion) {
+        if (hasChange) variations.push(`${entity}: o que muda para você?`);
+        if (hasDate) variations.push(`${entity}: quando começa a valer?`);
+        variations.push(`${entity}: vale a pena?`);
       }
       
-      if (intents.includes("shopping") || intents.includes("compare")) {
-        return [
-          "{ent}: {pergunta}",
-          "Como {beneficio} com {ent}",
-          "{ent}: {guia}",
-          "{ent}: {comparacao} vale a pena?",
-          "{ent}: {beneficio_curto}",
-        ];
+      // VARIAÇÃO 4: Formato guia/explicação
+      variations.push(`${entity}: entenda em 1 minuto`);
+      variations.push(`${entity} explicado: tudo o que você precisa saber`);
+      
+      // VARIAÇÃO 5: Formato benefício
+      if (intents.includes("policy")) {
+        variations.push(`${entity}: quem é afetado pelas mudanças`);
+        variations.push(`${entity}: regras explicadas de forma simples`);
       }
       
-      if (intents.includes("guide")) {
-        return [
-          "Como {beneficio} com {ent}",
-          "{ent}: {guia}",
-          "{ent} explicado: {beneficio_curto}",
-          "{ent}: {pergunta}",
-        ];
+      if (intents.includes("shopping")) {
+        variations.push(`${entity}: como escolher sem erro`);
+        variations.push(`${entity}: guia de compra completo`);
       }
       
-      // Templates gerais
-      return [
-        "{ent}: o que muda {contexto}",
-        "Como {beneficio} com {ent}",
-        "{ent} explicado: {beneficio_curto}",
-        "{ent}: {pergunta}",
-        "{ent}: {guia}",
-        "{ent}: {comparacao} vale a pena?",
-      ];
+      // VARIAÇÃO 6: Com contexto local se detectado
+      if (intents.includes("locale")) {
+        variations.push(`${entity} no ES: o que você precisa saber`);
+        variations.push(`${entity} em São Paulo: mudanças e impactos`);
+      }
+      
+      // VARIAÇÃO 7: Formato lista se houver número
+      if (hasNumber) {
+        const num = seed.match(/\d+/)?.[0];
+        if (num) {
+          variations.push(`${entity}: ${num} pontos essenciais`);
+          variations.push(`${num} coisas sobre ${entity} que você precisa saber`);
+        }
+      } else {
+        variations.push(`${entity}: 5 pontos essenciais`);
+        variations.push(`${entity}: 3 coisas que você precisa saber`);
+      }
+      
+      // VARIAÇÃO 8: Formato comparação
+      if (hasChange) {
+        variations.push(`${entity}: antes x depois das mudanças`);
+        variations.push(`${entity}: compare o que era e o que será`);
+      }
+      
+      // VARIAÇÃO 9: Formato urgência/atualidade
+      if (intents.includes("news") || hasDate) {
+        variations.push(`${entity}: mudanças entram em vigor em breve`);
+        variations.push(`${entity}: o que muda a partir de agora`);
+      }
+      
+      // VARIAÇÃO 10: Simplificação extrema
+      const simplifiedEntity = entity.replace(/^(novo|nova)\s+/i, '');
+      variations.push(`${simplifiedEntity}: entenda as mudanças`);
+      variations.push(`${simplifiedEntity}: guia completo`);
+      
+      return variations;
     }
 
     function generate(seed, entityHint=null, minLen=40, maxLen=68){
