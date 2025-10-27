@@ -1,563 +1,452 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Discover Title Optimizer</title>
+  <title>Assistente de Títulos • Google Discover</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="description" content="Cole um título e receba variações otimizadas para Google Discover (sem clickbait)">
+  <meta name="color-scheme" content="light dark"/>
   <style>
-    textarea{tab-size:2}
+    :root { color-scheme: light dark; }
+    .kbd {border:1px solid rgba(0,0,0,.2); padding:.15rem .4rem; border-radius:.375rem; font-size:.75rem;}
+    .mono {font-variant-ligatures: none;}
+    .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,.08); }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
-  <header class="max-w-5xl mx-auto px-4 pt-10 pb-6">
-    <h1 class="text-3xl font-bold tracking-tight">Discover Title Optimizer</h1>
-    <p class="text-slate-600 mt-2">Cole um título e gere variações otimizadas para <span class="font-medium">Google Discover</span>, com foco em CTR, clareza e fidelidade ao conteúdo.</p>
-  </header>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-indigo-200/60 dark:bg-slate-900 dark:text-slate-100">
+  <div class="max-w-5xl mx-auto p-6 sm:p-10">
+    <header class="mb-6">
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Assistente de Títulos para Google Discover</h1>
+      <p class="text-slate-600 dark:text-slate-300 mt-1">Gera → valida → ranqueia. Foco em clareza, especificidade e anti-clickbait.</p>
+    </header>
 
-  <main class="max-w-5xl mx-auto px-4 pb-16">
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="grid gap-4 md:grid-cols-[1fr_320px]">
-        <div>
-          <label class="block text-sm font-medium mb-2" for="seed">Título original</label>
-          <textarea id="seed" class="w-full h-28 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-base p-3" placeholder="Ex.: Novo ensino médio no ES terá mais aulas de disciplinas tradicionais; entenda"></textarea>
-        </div>
-        <div class="grid gap-4 content-start">
+    <!-- Config -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
+      <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
+        <label class="block text-sm font-medium mb-1" for="title">Título original</label>
+        <textarea id="title" class="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[84px]" placeholder="Cole aqui o título que você já tem…"></textarea>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div>
-            <label class="block text-sm font-medium mb-2" for="hint">Foco (opcional)</label>
-            <input id="hint" type="text" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="Ex.: ensino médio no ES" />
-            <p class="text-xs text-slate-500 mt-1">Use quando o título começa com palavras genéricas ("Novo", "Veja", etc.).</p>
+            <label class="block text-sm font-medium mb-1" for="type">Tipo de conteúdo (opcional)</label>
+            <select id="type" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <option value="">Geral</option>
+              <option>Notícia quente</option>
+              <option>Guia/Como fazer</option>
+              <option>Lista/Ranking</option>
+              <option>Explicador</option>
+              <option>Análise/Opinião</option>
+              <option>Serviço/Alerta</option>
+            </select>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium mb-1" for="qty">Sugestões</label>
-              <select id="qty" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
-                <option>5</option>
-                <option selected>10</option>
-                <option>15</option>
-                <option>20</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1" for="len">Tamanho alvo</label>
-              <select id="len" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="45-65" selected>45–65</option>
-                <option value="40-70">40–70</option>
-                <option value="35-75">35–75</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="aud">Tema/Audiência (opcional)</label>
+            <input id="aud" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ex.: Brasil; Android; impostos"/>
           </div>
-          <button id="go" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 text-white font-medium px-4 py-2.5 hover:bg-indigo-700 active:bg-indigo-800 transition">Gerar variações</button>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="apikey">OpenAI API Key</label>
+            <input id="apikey" type="password" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="sk-…"/>
+            <p class="text-[11px] text-slate-500 mt-1">Chave usada apenas localmente no seu navegador.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 mt-4">
+          <button id="btnGenerate" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium shadow-soft">Gerar sugestões</button>
+          <button id="btnCopyAll" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 font-medium" disabled>Copiar Top‑3</button>
+          <label class="ml-auto inline-flex items-center gap-2 text-sm"><input id="strictMode" type="checkbox" class="rounded"> <span>Modo estrito (mais rígido)</span></label>
         </div>
       </div>
 
-      <details class="mt-6">
-        <summary class="cursor-pointer text-sm text-slate-600">Regras de otimização (resumo)</summary>
-        <ul class="list-disc ml-6 mt-3 text-sm text-slate-600 space-y-1">
-          <li>Ideal de 45–65 caracteres; entidade no início quando possível.</li>
-          <li>Verbo ativo; curiosidade legítima; sem clickbait.</li>
-          <li>Formatos: "o que muda", "como funciona", "X motivos", "vale a pena?", "guia rápido", "quando começa".</li>
-          <li>Atualidade/região quando relevante. Sem inventar números.</li>
-        </ul>
-      </details>
+      <aside class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
+        <h2 class="font-medium mb-2">Como funciona</h2>
+        <ol class="list-decimal list-inside space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
+          <li>Extrai 3–6 <em>keywords</em> do título (e do contexto se houver).</li>
+          <li>Gera 5–7 variações com ancoragem às keywords.</li>
+          <li>Self‑check (LLM) + Validador local (anti-clickbait, tamanho, etc.).</li>
+          <li>Ranqueia por clareza, benefício, especificidade, legibilidade.</li>
+        </ol>
+        <p class="text-xs text-slate-500 mt-3">Dica: pressione <span class="kbd">/</span> para focar no campo de título e <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> para gerar.</p>
+      </aside>
     </section>
 
-    <section class="mt-8 hidden" id="resultsWrap">
+    <!-- Results -->
+    <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xl font-semibold">Sugestões</h2>
-        <div class="flex gap-2">
-          <button id="copyAll" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Copiar tudo</button>
-          <button id="downloadCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Baixar CSV</button>
-        </div>
+        <h2 class="font-medium">Sugestões</h2>
+        <div id="keywordBadge" class="text-xs text-slate-500"></div>
       </div>
-      <ol id="results" class="space-y-3"></ol>
+      <div id="results" class="grid gap-3"></div>
+      <div id="more" class="mt-4 hidden">
+        <button id="btnMore" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600">Ver alternativas</button>
+      </div>
     </section>
-  </main>
 
-  <footer class="max-w-5xl mx-auto px-4 pb-10 text-xs text-slate-500">
-    <p>Frontend estático. Sugestões geradas localmente com IA de regras.</p>
-  </footer>
+    <footer class="mt-8 text-xs text-slate-500">
+      <p>Feito para otimizar títulos com foco no Google Discover. Código autônomo, tudo em um arquivo HTML.</p>
+    </footer>
+  </div>
 
   <script>
-    // ===== CATÁLOGO INTERNO =====
-    const CATALOG = {
-      contexto: [
-        {t: "no Brasil", tags: ["locale"]},
-        {t: "em São Paulo", tags: ["locale"]},
-        {t: "no ES", tags: ["locale"]},
-        {t: "a partir deste mês", tags: ["time", "news"]},
-        {t: "neste ano", tags: ["time"]},
-        {t: "em 2025", tags: ["time"]},
+    // ===== Utilities =====
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    const STOPWORDS = new Set([
+      'a','as','o','os','um','uma','de','do','da','dos','das','e','ou','com','para','por','no','na','nos','nas','em','que','se','sobre','sem','até','entre','como','mais','menos','já','sua','seu','suas','seus','é','ao','à','às','aos','meu','minha','meus','minhas','lhe','eles','elas','ele','ela','isso','aquilo','este','esta','estes','estas','essa','essas','esses','aquele','aquela','aqueles','aquelas'
+    ]);
+
+    const BANNED = [
+      /você não vai acreditar/i,
+      /chocante/i,
+      /imperdível/i,
+      /clique e saiba/i,
+      /veja/i,
+      /descubra(?!r)/i, // "descubra" como imperativo clickbait
+      /top \d+/i,
+      /não perca/i,
+      /bomb(a|ástico)/i
+    ];
+
+    const PATTERNS = {
+      'Notícia quente': [
+        '{KW1} {VERBO}: {FOCO}',
+        '{ENTIDADE} lança {FOCO}: o que muda',
+        '{FOCO} chega a {ENTIDADE}: como usar'
       ],
-      beneficio: [
-        {t: "pagar menos", tags: ["cost", "consumer", "shopping"]},
-        {t: "escolher melhor", tags: ["guide", "list", "consumer"]},
-        {t: "se adaptar às novas regras", tags: ["policy", "news"]},
-        {t: "evitar arrependimentos", tags: ["guide", "compare"]},
-        {t: "acertar na compra", tags: ["shopping", "guide"]},
+      'Guia/Como fazer': [
+        'Como {TAREFA}: {FOCO}',
+        '{FOCO} para iniciantes: passo a passo',
+        '{N} dicas para {TAREFA}'
       ],
-      beneficio_curto: [
-        {t: "o que muda e quando", tags: ["news", "time", "policy"]},
-        {t: "regras em 1 minuto", tags: ["guide", "policy"]},
-        {t: "quem paga e quanto", tags: ["policy", "cost"]},
-        {t: "como escolher sem erro", tags: ["guide", "shopping"]},
+      'Lista/Ranking': [
+        '{N} opções de {FOCO} para {AUD}',
+        '{FOCO}: {N} modelos que valem a pena'
       ],
-      comparacao: [
-        {t: "antes x depois", tags: ["news", "policy", "compare"]},
-        {t: "agora", tags: ["news", "time"]},
-        {t: "com e sem a mudança", tags: ["compare", "policy"]},
-        {t: "preço x qualidade", tags: ["compare", "cost", "shopping"]},
+      'Explicador': [
+        '{ENTIDADE}: o que é, como funciona e quando usar',
+        '{FOCO}: prós, contras e exemplos'
       ],
-      guia: [
-        {t: "guia rápido", tags: ["guide"]},
-        {t: "passo a passo", tags: ["guide"]},
-        {t: "checklist essencial", tags: ["guide", "list"]},
-        {t: "guia de compra", tags: ["guide", "shopping"]},
+      'Análise/Opinião': [
+        '{FOCO}: por que importa agora',
+        '{ENTIDADE} vs {FOCO}: o que muda'
       ],
-      pergunta: [
-        {t: "vale a pena agora?", tags: ["compare", "news", "consumer"]},
-        {t: "o que muda para você", tags: ["news", "policy", "consumer"]},
-        {t: "quais os erros mais comuns", tags: ["guide", "list"]},
-        {t: "como escolher o melhor", tags: ["guide", "list", "shopping"]},
-      ],
-      n: [
-        {t: "3", tags: ["list"]},
-        {t: "5", tags: ["list"]},
-        {t: "7", tags: ["list"]},
-      ],
+      'Serviço/Alerta': [
+        '{PRAZO}: quem tem direito e como pedir',
+        '{FOCO}: como consultar e evitar erros'
+      ]
     };
 
-    // ===== Helpers =====
-    const STOP = new Set(["o","a","os","as","de","do","da","dos","das","no","na","nos","nas","em","para","por","um","uma","e","ou","com","sem","que","mais","menos","sobre","até","entre","se","novo","nova","veja","entenda","descubra","saiba","agora","hoje"]);
+    function tokenize(text) {
+      return text
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9áéíóúãõâêîôûç\s-]/gi, ' ')
+        .split(/\s+/)
+        .filter(Boolean);
+    }
 
-    function clean(s){return s.trim().replace(/\s+/g,' ')}
-
-    function extractKeywords(seed){
-      const tokens = (seed.match(/[A-Za-zÀ-ÿ0-9]+/g) || []);
-      const words = tokens.filter(Boolean);
-      const ngrams = [];
-      for (const n of [3,2]){
-        for (let i=0; i<=words.length-n; i++){
-          const chunk = words.slice(i,i+n);
-          if (chunk.every(w=>!STOP.has(w.toLowerCase()))){
-            const phrase = chunk.join(' ');
-            if (!/^\d+%?$/.test(phrase)) ngrams.push(phrase);
-          }
-        }
+    function extractKeywords(title, audience = '') {
+      const words = tokenize(`${title} ${audience}`);
+      const freq = new Map();
+      for (const w of words) {
+        if (STOPWORDS.has(w) || w.length < 3) continue;
+        freq.set(w, (freq.get(w) || 0) + 1);
       }
-      const singles = words.filter(w=>!STOP.has(w.toLowerCase()) && w.length>3);
-      const seen = new Set();
-      const out = [];
-      for (const x of [...ngrams, ...singles]){
-        const xl = x.toLowerCase();
-        if (!seen.has(xl)){ seen.add(xl); out.push(x) }
-      }
-      return out.slice(0,5);
+      const ranked = [...freq.entries()].sort((a,b)=>b[1]-a[1]).map(([w])=>w);
+      return ranked.slice(0, Math.max(3, Math.min(6, ranked.length)));
     }
 
-    function tokenSet(str){
-      return new Set((str.toLowerCase().match(/[a-zà-ÿ0-9]+/g) || []).filter(w=>w.length>2));
+    function jaccard(a, b) {
+      const A = new Set(tokenize(a));
+      const B = new Set(tokenize(b));
+      const inter = new Set([...A].filter(x=>B.has(x))).size;
+      const uni = new Set([...A, ...B]).size || 1;
+      return inter / uni;
     }
 
-    function score(title, topicKeywords=[], minLen=40, maxLen=68){
-      const t = title.toLowerCase();
-      let s = 0; const L = title.length;
-      s += (L>=minLen && L<=maxLen) ? 2 : -1;
-      if (/\b(veja|entenda|confira|saiba|descubra|aprenda|compare|evite|garanta|calcule|planeje|atualize)\b/.test(t)) s+=2;
-      if (/(\b\d+%?|\btop\b|\bguia\b|passo a passo|checklist)/.test(t)) s+=2;
-      for (const kw of topicKeywords){ if (kw && t.includes(kw.toLowerCase())) s+=1 }
-      if (/você não vai acreditar|chocante|imperdível/.test(t)) s-=4;
-      const words = t.split(/\s+/);
-      if (new Set(words).size !== words.length) s-=1;
-      if (topicKeywords.some(kw=>kw && t.startsWith(kw.toLowerCase()))) s+=1;
-      return s;
+    function hasBanned(text) { return BANNED.some(r => r.test(text)); }
+
+    function withinLen(t, strict=false) {
+      const len = t.trim().length;
+      const min = strict ? 38 : 35;
+      const max = strict ? 62 : 68;
+      return len >= min && len <= max;
     }
 
-    function classifyAngle(t){
-      const tl = t.toLowerCase();
-      if (/\bcomo\b|aprenda|passo a passo/.test(tl)) return "How-to";
-      if (/\b\d+|top|pontos|checklist/.test(tl)) return "Lista/Dados";
-      if (/vale a pena|antes x depois|compare/.test(tl)) return "Comparação/Análise";
-      if (/o que muda|explicado|entenda|guia|regras/.test(tl)) return "Guia/Explicação";
-      if (/\?|quem|quando|quanto/.test(tl)) return "Pergunta";
-      return "Genérico";
+    function includesKeyword(t, kws) {
+      const lt = t.toLowerCase();
+      return kws.some(k => lt.includes(k.toLowerCase()));
     }
 
-    // ===== INTENTS =====
-    const RX = {
-      list: /(^\d+\b|\btop\b|\bmelhores\b|\branking\b)/i,
-      news: /\b(agora|nesta semana|hoje|lança|anuncia|divulga|entra em vigor|valerá|começa)\b/i,
-      policy: /\b(lei|projeto|regra|imposto|tax(a|e)|tribut|alíquota|governo|ministério)\b/i,
-      money: /\b(preço|preços|barato|caro|cust(o|os)|pagar|economi|desconto|promo|orçamento)\b/i,
-      compare: /\b(vs|x|versus|compar(a|ação)|vale a pena)\b/i,
-      howto: /\b(como|passo a passo|guia|manual|checklist|dicas)\b/i,
-      date: /\b(202[4-9]|202\d|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|hoje|amanhã)\b/i,
-      place: /\b(brasil|são paulo|sp|rj|rio de janeiro|mg|es|vitória|porto alegre|curitiba|lisboa|portugal)\b/i,
-      shopping: /\b(compr(a|as)|loja|e-commerce|marketplace|amazon|magalu|shein|aliexpress)\b/i,
-    };
-
-    function detectIntents(seed){
-      const t = seed.toLowerCase();
-      const intents = new Set();
-      if (RX.list.test(t)) intents.add("list");
-      if (RX.news.test(t)) intents.add("news");
-      if (RX.policy.test(t)) intents.add("policy");
-      if (RX.money.test(t)) intents.add("cost");
-      if (RX.compare.test(t)) intents.add("compare");
-      if (RX.howto.test(t)) intents.add("guide");
-      if (RX.date.test(t)) intents.add("time");
-      if (RX.place.test(t)) intents.add("locale");
-      if (RX.shopping.test(t)) intents.add("shopping");
-      intents.add("consumer");
-      return [...intents];
+    function antiClickbaitScore(t) {
+      let score = 2; // 0-2
+      if (hasBanned(t)) score -= 2;
+      if (/[!]{2,}/.test(t)) score -= 1;
+      if (/[A-Z]{6,}/.test(t)) score -= 1;
+      return Math.max(0, score);
     }
 
-    function compatScore(item, intents, seed){
+    function benefitScore(t) {
+      const patterns = /(como|guia|passo a passo|o que muda|o que é|dicas|lista|alerta|quem tem direito|comparativo|vs)/i;
+      return patterns.test(t) ? 3 : 1; // 0–3
+    }
+
+    function specificityScore(t) {
       let s = 0;
-      for (const tag of item.tags||[]) if (intents.includes(tag)) s += 2;
-      const A = tokenSet(item.t); const B = tokenSet(seed);
-      let overlap = 0; for (const w of A) if (B.has(w)) overlap++;
-      s += Math.min(overlap,2);
-      if (intents.includes("list") && /guia|critérios|checklist|pontos|passo/.test(item.t)) s += 1;
-      if (intents.includes("policy") && /regra|muda|quando|quem paga/.test(item.t)) s += 1;
-      if (intents.includes("shopping") && /compra|preço|vale a pena/.test(item.t)) s += 1;
-      return s;
+      if (/\d/.test(t)) s += 1;
+      if (/:|–|-/.test(t)) s += 1; // sugere foco/ângulo
+      return Math.min(2, s);
     }
 
-    function pickTop(slotArr, intents, seed, n=2){
-      if (!Array.isArray(slotArr)) return [];
-      return [...slotArr]
-        .map(it => ({...it, _s: compatScore(it, intents, seed)}))
-        .sort((a,b)=> b._s - a._s)
-        .slice(0, n)
-        .map(it => it.t);
+    function clarityScore(t, kws) {
+      let count = 0;
+      for (const k of kws) if (t.toLowerCase().includes(k.toLowerCase())) count++;
+      if (count >= 2) return 3;
+      if (count === 1) return 2;
+      return 0;
     }
 
-    function buildSlots(seed, entity, intents){
+    function legibilityScore(t) { return withinLen(t) ? 2 : 0; }
+
+    function totalScore(t, kws) {
+      return clarityScore(t, kws) + benefitScore(t) + specificityScore(t) + antiClickbaitScore(t) + legibilityScore(t);
+    }
+
+    function explain(t, kws) {
+      const reasons = [];
+      if (clarityScore(t, kws) >= 2) reasons.push('Entidade clara');
+      if (/\d/.test(t)) reasons.push('Número específico');
+      if (/(como|guia|passo a passo)/i.test(t)) reasons.push('Benefício/como fazer');
+      if (/(o que muda|o que é)/i.test(t)) reasons.push('Ângulo explícito');
+      if (withinLen(t)) reasons.push('Tamanho adequado');
+      if (hasBanned(t)) reasons.push('⚠️ Possível clickbait');
+      return reasons.slice(0,3);
+    }
+
+    // ===== OpenAI Calls =====
+    const DEFAULT_MODEL = 'gpt-4o-mini'; // ajuste se preferir
+
+    async function openAIChat({messages, apiKey, model=DEFAULT_MODEL, temperature=0.3, max_tokens=256}) {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          temperature,
+          top_p: 0.8,
+          frequency_penalty: 0.2,
+          presence_penalty: 0.0,
+          messages,
+          max_tokens
+        })
+      });
+      if (!res.ok) throw new Error(`OpenAI: ${res.status} ${res.statusText}`);
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content?.trim();
+    }
+
+    function buildSystemPrompt() {
       return {
-        contexto: pickTop(CATALOG.contexto, intents, seed, 2),
-        beneficio: pickTop(CATALOG.beneficio, intents, seed, 2),
-        beneficio_curto: pickTop(CATALOG.beneficio_curto, intents, seed, 2),
-        comparacao: pickTop(CATALOG.comparacao, intents, seed, 2),
-        guia: pickTop(CATALOG.guia, intents, seed, 2),
-        pergunta: pickTop(CATALOG.pergunta, intents, seed, 2),
-        n: pickTop(CATALOG.n, intents, seed, 2),
-        ent: [entity]
+        role: 'system',
+        content: [
+          'Você é um otimizador de títulos para o Google Discover.',
+          'Regras:',
+          '1) Não invente fatos. Não adicione entidades que não estejam nas PALAVRAS-CHAVE.',
+          '2) 35–65 caracteres; linguagem clara; sem clickbait; sem “veja”, “descubra”, “você não vai acreditar”.',
+          '3) Retorne apenas um JSON array de strings (sem comentários).',
+          '4) Cada título deve manter ao menos uma das PALAVRAS-CHAVE.',
+          '5) Varie a estrutura (lista, como fazer, novidade, dado).'
+        ].join('\n')
       };
     }
 
-    function classifyEntity(seed, hint){
-      const ents = extractKeywords(seed);
-      let ent = hint || ents.find(e=>!/^(novo|veja|entenda|descubra|saiba)$/i.test(e)) || ents[0] || seed;
-      return ent.replace(/^\d+\s+/, '');
+    function buildUserPrompt({title, keywords, tipo}) {
+      const tipoLine = tipo ? `\nTIPO: ${tipo}` : '';
+      return {
+        role: 'user',
+        content: [
+          `TÍTULO_ORIGINAL: "${title}"`,
+          `PALAVRAS-CHAVE: ${JSON.stringify(keywords)}`,
+          'OBJETIVO: aumentar CTR no Discover com clareza e especificidade.',
+          'GERAR: 6 títulos alternativos, variados em estrutura (lista, como fazer, novidade, dado).',
+          'FORMATO DE RESPOSTA: JSON array de strings, sem comentários.' + tipoLine
+        ].join('\n')
+      };
     }
 
-    // ===== VALIDAÇÃO DE COERÊNCIA =====
-    function isCoherent(title, seed) {
-      const tl = title.toLowerCase();
-      const sl = seed.toLowerCase();
-      
-      // Descarta se repete a mesma palavra 3+ vezes
-      const words = tl.split(/\s+/);
-      const freq = {};
-      for (const w of words) {
-        if (w.length < 3) continue;
-        freq[w] = (freq[w] || 0) + 1;
-        if (freq[w] >= 3) return false;
-      }
-      
-      // Descarta padrões incoerentes
-      if (/^veja:.*como|^veja:.*passo a passo/.test(tl)) return false;
-      if (/^aprenda:.*vale a pena/.test(tl)) return false;
-      if (/^descubra:.*o que muda/.test(tl)) return false;
-      
-      // Descarta título muito genérico
-      const nonStop = words.filter(w => !STOP.has(w) && w.length > 2);
-      if (nonStop.length < 3) return false;
-      
-      // Mantém apenas se houver overlap significativo com seed
-      const seedTokens = tokenSet(sl);
-      const titleTokens = tokenSet(tl);
-      let overlap = 0;
-      for (const t of titleTokens) {
-        if (seedTokens.has(t)) overlap++;
-      }
-      
-      return overlap >= 2;
+    function buildSelfCheckPrompt({title, keywords, candidates}) {
+      return {
+        role: 'user',
+        content: [
+          `TÍTULO_ORIGINAL: "${title}"`,
+          `PALAVRAS-CHAVE: ${JSON.stringify(keywords)}`,
+          'Abaixo estão candidatos de título. Para cada um, responda uma linha no JSON com:',
+          '{"ok": boolean, "motivo": string curta}.',
+          'Critérios para ok=true: contém >=1 keyword; não adiciona fato novo; evita clickbait; 35–65 caracteres.',
+          `CANDIDATOS: ${JSON.stringify(candidates)}`,
+          'FORMATO: JSON array com mesmo número de itens.'
+        ].join('\n')
+      };
     }
 
-    // ===== SCORE MELHORADO =====
-    function betterScore(title, seed, topicKeywords, minLen, maxLen) {
-      let s = score(title, topicKeywords, minLen, maxLen);
-      
-      const tl = title.toLowerCase();
-      
-      // Penaliza redundância de palavras
-      const words = tl.split(/\s+/).filter(w => w.length > 3);
-      const unique = new Set(words);
-      if (words.length > unique.size) s -= 1;
-      
-      // Penaliza se não captura essência do seed
-      const seedWords = tokenSet(seed);
-      const titleWords = tokenSet(title);
-      let captured = 0;
-      for (const w of seedWords) {
-        if (titleWords.has(w)) captured++;
-      }
-      if (captured < 2) s -= 3;
-      if (captured >= 4) s += 1;
-      
-      // Bonifica se mantém números do original
-      const seedNum = seed.match(/\d+/g);
-      const titleNum = title.match(/\d+/g);
-      if (seedNum && titleNum && seedNum[0] === titleNum[0]) s += 2;
-      
-      // Bonifica estruturas claras
-      if (/^[^:]+:\s+(o que|como|quando|quem|quanto|vale|guia)/.test(tl)) s += 1;
-      
-      // Bonifica se entidade está no início
-      const firstWords = tl.split(/\s+/).slice(0, 2).join(' ');
-      for (const kw of topicKeywords) {
-        if (kw && firstWords.includes(kw.toLowerCase())) {
-          s += 1;
-          break;
-        }
-      }
-      
-      return s;
-    }
+    // ===== Render =====
+    function renderResults({top, others, keywords}) {
+      const res = $('#results');
+      res.innerHTML = '';
 
-    // ===== GERAÇÃO INTELIGENTE DE VARIAÇÕES =====
-    function generateSmartVariations(seed, entity, intents) {
-      const variations = [];
-      const sl = seed.toLowerCase();
-      
-      // Extrai informações-chave do título original
-      const hasDate = /\b(data|prazo|começa|entra em vigor|a partir de|até|quando)\b/i.test(seed);
-      const hasChange = /\b(muda|mudança|novo|nova|alteração|reforma)\b/i.test(seed);
-      const hasNumber = /\d+/.test(seed);
-      const hasQuestion = seed.includes('?');
-      
-      // VARIAÇÃO 1: Mantém o original limpo
-      variations.push(seed);
-      
-      // VARIAÇÃO 2: Versão direta com foco
-      if (hasChange && hasDate) {
-        variations.push(`${entity}: o que muda e quando`);
-        variations.push(`${entity} ${intents.includes("locale") ? "no ES" : ""}: mudanças explicadas`);
-      }
-      
-      // VARIAÇÃO 3: Formato pergunta
-      if (!hasQuestion) {
-        if (hasChange) variations.push(`${entity}: o que muda para você?`);
-        if (hasDate) variations.push(`${entity}: quando começa a valer?`);
-        variations.push(`${entity}: vale a pena?`);
-      }
-      
-      // VARIAÇÃO 4: Formato guia/explicação
-      variations.push(`${entity}: entenda em 1 minuto`);
-      variations.push(`${entity} explicado: tudo o que você precisa saber`);
-      
-      // VARIAÇÃO 5: Formato benefício
-      if (intents.includes("policy")) {
-        variations.push(`${entity}: quem é afetado pelas mudanças`);
-        variations.push(`${entity}: regras explicadas de forma simples`);
-      }
-      
-      if (intents.includes("shopping")) {
-        variations.push(`${entity}: como escolher sem erro`);
-        variations.push(`${entity}: guia de compra completo`);
-      }
-      
-      // VARIAÇÃO 6: Com contexto local se detectado
-      if (intents.includes("locale")) {
-        variations.push(`${entity} no ES: o que você precisa saber`);
-        variations.push(`${entity} em São Paulo: mudanças e impactos`);
-      }
-      
-      // VARIAÇÃO 7: Formato lista se houver número
-      if (hasNumber) {
-        const num = seed.match(/\d+/)?.[0];
-        if (num) {
-          variations.push(`${entity}: ${num} pontos essenciais`);
-          variations.push(`${num} coisas sobre ${entity} que você precisa saber`);
-        }
-      } else {
-        variations.push(`${entity}: 5 pontos essenciais`);
-        variations.push(`${entity}: 3 coisas que você precisa saber`);
-      }
-      
-      // VARIAÇÃO 8: Formato comparação
-      if (hasChange) {
-        variations.push(`${entity}: antes x depois das mudanças`);
-        variations.push(`${entity}: compare o que era e o que será`);
-      }
-      
-      // VARIAÇÃO 9: Formato urgência/atualidade
-      if (intents.includes("news") || hasDate) {
-        variations.push(`${entity}: mudanças entram em vigor em breve`);
-        variations.push(`${entity}: o que muda a partir de agora`);
-      }
-      
-      // VARIAÇÃO 10: Simplificação extrema
-      const simplifiedEntity = entity.replace(/^(novo|nova)\s+/i, '');
-      variations.push(`${simplifiedEntity}: entenda as mudanças`);
-      variations.push(`${simplifiedEntity}: guia completo`);
-      
-      return variations;
-    }
-
-    function generate(seed, entityHint=null, minLen=40, maxLen=68){
-      seed = clean(seed);
-      const ent = classifyEntity(seed, entityHint);
-      const intents = detectIntents(seed);
-      const slots = buildSlots(seed, ent, intents);
-
-      const molds = selectMolds(seed, intents);
-      const out = new Set();
-
-      // Gera combinações limitadas e validadas
-      for (const mold of molds){
-        const keys = [...mold.matchAll(/\{(\w+)\}/g)].map(m=>m[1]);
-        const lists = keys.map(k=>(slots[k]||[""]).slice(0, 2));
-        
-        function loop(idx, acc){
-          if (idx===lists.length){
-            let t = mold; 
-            keys.forEach((k,i)=>{ t = t.replace(`{${k}}`, acc[i]) });
-            t = clean(t); 
-            t = t.charAt(0).toUpperCase() + t.slice(1);
-            
-            // VALIDA coerência antes de adicionar
-            if (t.length >= 30 && t.length <= 90 && isCoherent(t, seed)) {
-              out.add(t);
-            }
-            return;
-          }
-          for (const item of lists[idx]) loop(idx+1, [...acc, item]);
-        }
-        loop(0, []);
-      }
-      
-      // Adiciona o original
-      out.add(seed);
-      
-      // Adiciona uma variação segura
-      const seedBase = clean(seed.replace(/:.*/, ""));
-      if (seedBase.length < 80) {
-        const safeVariant = seedBase + ": o que muda e quando";
-        if (safeVariant.length <= 90) {
-          out.add(safeVariant);
-        }
-      }
-
-      const kw = extractKeywords(seed);
-      const scored = [...out].map(t=>({
-        title: t,
-        score: betterScore(t, seed, kw, minLen, maxLen),
-        angle: classifyAngle(t),
-        len: t.length
-      }))
-      .filter(x=>x.len>=30 && x.len<=90)
-      .sort((a,b)=> b.score - a.score);
-
-      return scored;
-    }
-
-    function justify(title){
-      const tl = title.toLowerCase();
-      const parts = [];
-      if (/(o que muda|explicado|entenda|guia)/.test(tl)) parts.push("explica o essencial");
-      if (/\bcomo\b|passo a passo/.test(tl)) parts.push("promete how-to prático");
-      if (/\b\d+|pontos|checklist|top/.test(tl)) parts.push("estrutura de lista atrativa");
-      if (/quando|quem|quanto|\?/.test(tl)) parts.push("curiosidade legítima");
-      if (/no brasil|em /.test(tl)) parts.push("contexto/localização clara");
-      if (/vale a pena/.test(tl)) parts.push("ângulo de decisão/avaliação");
-      if (parts.length===0) parts.push("clareza e relevância para Discover");
-      return parts.join(" · ");
-    }
-
-    function toCSV(rows){
-      const header = ["title","score","len","angle"];
-      const esc = v => '"'+String(v).replaceAll('"','""')+'"';
-      const lines = [header.join(',')];
-      for (const r of rows){ lines.push([esc(r.title), r.score, r.len, esc(r.angle)].join(',')); }
-      return lines.join('\n');
-    }
-
-    function copyAllText(rows){
-      const text = rows.map((r,i)=>`${i+1}. ${r.title}`).join('\n');
-      navigator.clipboard.writeText(text);
-    }
-
-    // ===== UI =====
-    const seedEl = document.getElementById('seed');
-    const hintEl = document.getElementById('hint');
-    const lenEl = document.getElementById('len');
-    const qtyEl = document.getElementById('qty');
-    const goEl = document.getElementById('go');
-    const results = document.getElementById('results');
-    const resultsWrap = document.getElementById('resultsWrap');
-    const copyAllBtn = document.getElementById('copyAll');
-    const dlBtn = document.getElementById('downloadCsv');
-
-    function parseLenRange(){
-      const [min,max] = lenEl.value.split('-').map(n=>parseInt(n,10));
-      return {min,max};
-    }
-
-    function render(){
-      const seed = seedEl.value.trim();
-      if (!seed){ resultsWrap.classList.add('hidden'); return; }
-      const {min,max} = parseLenRange();
-      const rows = generate(seed, hintEl.value.trim()||null, min, max);
-      const top = rows.slice(0, parseInt(qtyEl.value,10));
-
-      results.innerHTML = '';
-      top.forEach((r, idx)=>{
-        const li = document.createElement('li');
-        li.className = 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
-        li.innerHTML = `
-          <div class="flex items-start justify-between gap-4">
-            <div class="text-sm text-slate-500">#${idx+1}</div>
-            <div class="shrink flex-1">
-              <div class="font-medium leading-snug">${r.title}</div>
-              <div class="text-xs text-slate-500 mt-1">${justify(r.title)}</div>
-            </div>
-            <div class="text-right text-xs text-slate-500">
-              <div>Score: <span class="font-medium">${r.score}</span></div>
-              <div>${r.len} caracteres</div>
-              <div>${r.angle}</div>
+      const makeCard = (t, score, reasons) => {
+        const el = document.createElement('div');
+        el.className = 'rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 flex items-start gap-3';
+        el.innerHTML = `
+          <div class="flex-1">
+            <div class="text-base sm:text-lg font-medium leading-snug">${escapeHtml(t)}</div>
+            <div class="mt-2 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap gap-x-2 gap-y-1">
+              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">score ${score}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${t.length} chars</span>
+              ${reasons.map(r=>`<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${escapeHtml(r)}</span>`).join('')}
             </div>
           </div>
-          <div class="mt-3 flex gap-2">
-            <button class="copy px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-sm">Copiar</button>
-          </div>
-        `;
-        li.querySelector('.copy').addEventListener('click', ()=>{
-          navigator.clipboard.writeText(r.title);
-          li.querySelector('.copy').textContent = 'Copiado!';
-          setTimeout(()=> li.querySelector('.copy').textContent = 'Copiar', 1200);
-        })
-        results.appendChild(li);
-      })
+          <div class="flex flex-col items-end gap-2">
+            <button class="copy px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm">Copiar</button>
+          </div>`;
+        el.querySelector('button.copy').addEventListener('click', () => copyText(t));
+        return el;
+      };
 
-      resultsWrap.classList.remove('hidden');
+      top.forEach(item => res.appendChild(makeCard(item.text, item.score, item.reasons)));
 
-      copyAllBtn.onclick = ()=> copyAllText(top);
-      dlBtn.onclick = ()=>{
-        const csv = toCSV(top);
-        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'titulos_discover.csv'; a.click();
-        URL.revokeObjectURL(url);
-      }
+      const more = $('#more');
+      if (others.length) {
+        more.classList.remove('hidden');
+        $('#btnMore').onclick = () => {
+          others.forEach(item => res.appendChild(makeCard(item.text, item.score, item.reasons)));
+          more.classList.add('hidden');
+        };
+      } else more.classList.add('hidden');
+
+      $('#btnCopyAll').disabled = !top.length;
+      $('#btnCopyAll').onclick = () => copyText(top.map(x=>x.text).join('\n'));
+
+      $('#keywordBadge').innerHTML = `Keywords: <span class="mono">${keywords.map(escapeHtml).join(', ')}</span>`;
     }
 
-    goEl.addEventListener('click', render);
-    seedEl.addEventListener('keydown', (e)=>{ if (e.key==='Enter' && (e.metaKey||e.ctrlKey)) render() });
+    function escapeHtml(s){
+      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+
+    async function copyText(text){
+      try{ await navigator.clipboard.writeText(text); toast('Copiado!'); }
+      catch{ toast('Não foi possível copiar'); }
+    }
+
+    function toast(msg){
+      const t = document.createElement('div');
+      t.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(), 1500);
+    }
+
+    function dedup(list, threshold=0.9){
+      const out = [];
+      for (const s of list){
+        if (out.every(t => jaccard(s, t) < threshold)) out.push(s);
+      }
+      return out;
+    }
+
+    function localValidate(cand, kws, strict=false){
+      const ok = includesKeyword(cand, kws) && withinLen(cand, strict) && !hasBanned(cand);
+      let motivo = '';
+      if (!includesKeyword(cand, kws)) motivo = 'não contém keyword';
+      else if (!withinLen(cand, strict)) motivo = 'tamanho fora da faixa';
+      else if (hasBanned(cand)) motivo = 'possível clickbait';
+      return {ok, motivo};
+    }
+
+    // ===== Main Flow =====
+    async function generate(){
+      const title = $('#title').value.trim();
+      const tipo = $('#type').value;
+      const aud = $('#aud').value.trim();
+      const apiKey = $('#apikey').value.trim();
+      const strict = $('#strictMode').checked;
+
+      if (!title) { toast('Cole um título'); $('#title').focus(); return; }
+      if (!apiKey) { toast('Informe sua OpenAI API key'); $('#apikey').focus(); return; }
+
+      // 1) Keywords
+      let keywords = extractKeywords(title, aud);
+      if (aud) keywords = dedup([...keywords, ...tokenize(aud).filter(w=>!STOPWORDS.has(w))]).slice(0,6);
+
+      // 2) Generation
+      let raw;
+      try {
+        const sys = buildSystemPrompt();
+        const user = buildUserPrompt({title, keywords, tipo});
+        raw = await openAIChat({messages: [sys, user], apiKey, temperature: 0.3, max_tokens: 220});
+      } catch (e) {
+        console.error(e);
+        toast('Erro na geração');
+        return;
+      }
+
+      let candidates;
+      try {
+        candidates = JSON.parse(raw);
+      } catch {
+        // tenta recuperar JSON de dentro do texto
+        const match = raw?.match(/\[[\s\S]*\]/);
+        candidates = match ? JSON.parse(match[0]) : [];
+      }
+      candidates = (candidates || []).map(s=>String(s)).filter(Boolean);
+      candidates = dedup(candidates, 0.85).slice(0, 10);
+
+      if (!candidates.length){ toast('Nenhum candidato gerado'); return; }
+
+      // 3) Self-check (LLM) — baratinho
+      let checks = [];
+      try {
+        const selfUser = buildSelfCheckPrompt({title, keywords, candidates});
+        const rawCheck = await openAIChat({messages: [buildSystemPrompt(), selfUser], apiKey, temperature: 0.0, max_tokens: 220});
+        checks = JSON.parse(rawCheck);
+      } catch (e) {
+        // se falhar, usa somente validador local
+        checks = candidates.map(c => localValidate(c, keywords, strict));
+      }
+
+      // 4) Validação local adicional + score
+      const scored = candidates.map((text, i) => {
+        const sc = checks[i] && typeof checks[i].ok === 'boolean' ? checks[i] : localValidate(text, keywords, strict);
+        if (!sc.ok) return null;
+        const score = totalScore(text, keywords);
+        return {text, score, reasons: explain(text, keywords)};
+      }).filter(Boolean);
+
+      // filtros finais
+      const uniq = [];
+      for (const item of scored){
+        if (uniq.every(x => jaccard(item.text, x.text) < 0.8)) uniq.push(item);
+      }
+
+      uniq.sort((a,b)=>b.score - a.score || a.text.length - b.text.length);
+
+      const top = uniq.slice(0,3);
+      const others = uniq.slice(3);
+
+      renderResults({top, others, keywords});
+    }
+
+    // ===== Events =====
+    $('#btnGenerate').addEventListener('click', generate);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== $('#title')) { e.preventDefault(); $('#title').focus(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generate(); }
+    });
+
   </script>
 </body>
 </html>
