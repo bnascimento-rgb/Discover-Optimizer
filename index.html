@@ -1,3 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discover Title Optimizer v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Cole um título e receba variações otimizadas para Google Discover (sem clickbait)">
+  <style>
+    textarea{tab-size:2}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <header class="max-w-5xl mx-auto px-4 pt-10 pb-6">
+    <h1 class="text-3xl font-bold tracking-tight">Discover Title Optimizer v2</h1>
+    <p class="text-slate-600 mt-2">Cole um título e gere variações otimizadas para <span class="font-medium">Google Discover</span>, com foco em CTR, clareza e fidelidade ao conteúdo.</p>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 pb-16">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div class="grid gap-4 md:grid-cols-[1fr_320px]">
+        <div>
+          <label class="block text-sm font-medium mb-2" for="seed">Título original</label>
+          <textarea id="seed" class="w-full h-28 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-base p-3" placeholder="Ex.: Novo ensino médio no ES terá mais aulas de disciplinas tradicionais; entenda"></textarea>
+        </div>
+        <div class="grid gap-4 content-start">
+          <div>
+            <label class="block text-sm font-medium mb-2" for="hint">Foco (opcional)</label>
+            <input id="hint" type="text" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="Ex.: ensino médio no ES" />
+            <p class="text-xs text-slate-500 mt-1">Use quando o título começa com palavras genéricas ("Novo", "Veja", etc.).</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1" for="qty">Sugestões</label>
+              <select id="qty" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                <option>5</option>
+                <option selected>10</option>
+                <option>15</option>
+                <option>20</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="len">Tamanho alvo</label>
+              <select id="len" class="w-full rounded-xl border-slate-300 p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="45-65" selected>45–65</option>
+                <option value="40-70">40–70</option>
+                <option value="35-75">35–75</option>
+              </select>
+            </div>
+          </div>
+          <button id="go" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 text-white font-medium px-4 py-2.5 hover:bg-indigo-700 active:bg-indigo-800 transition">Gerar variações</button>
+        </div>
+      </div>
+
+      <details class="mt-6">
+        <summary class="cursor-pointer text-sm text-slate-600">Regras de otimização (resumo)</summary>
+        <ul class="list-disc ml-6 mt-3 text-sm text-slate-600 space-y-1">
+          <li>Ideal de 45–65 caracteres; entidade no início quando possível.</li>
+          <li>Verbo ativo; curiosidade legítima; sem clickbait.</li>
+          <li>Formatos: "o que muda", "como funciona", "X motivos", "vale a pena?", "guia rápido", "quando começa".</li>
+          <li>Atualidade/região quando relevante. Sem inventar números.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- ===== CSV CATALOG ===== -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-8">
+      <details open>
+        <summary class="cursor-pointer text-sm text-slate-600">Catálogo via CSV (edite/cole aqui e clique em "Aplicar catálogo")</summary>
+        <p class="text-xs text-slate-500 mt-2">Formato: <code>slot;texto;tags|separadas|por|pipe</code>. Linhas iniciadas com <code>#</code> são ignoradas.</p>
+        <textarea id="csvInput" class="w-full h-56 mt-3 rounded-xl border-slate-300 p-3 font-mono text-sm"></textarea>
+        <div class="mt-3 flex gap-2">
+          <button id="applyCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Aplicar catálogo</button>
+          <button id="resetCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Restaurar exemplo</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="mt-8 hidden" id="resultsWrap">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-semibold">Sugestões</h2>
+        <div class="flex gap-2">
+          <button id="copyAll" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Copiar tudo</button>
+          <button id="downloadCsv" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Baixar CSV</button>
+        </div>
+      </div>
+      <ol id="results" class="space-y-3"></ol>
+    </section>
+  </main>
+
+  <footer class="max-w-5xl mx-auto px-4 pb-10 text-xs text-slate-500">
+    <p>Frontend estático. Você pode ampliar o catálogo colando CSV acima. Sem back-end.</p>
+  </footer>
+
+  <script>
+    // ===== CSV DEFAULT =====
+    const CSV_DEFAULT = `
+# slot;texto;tags
+contexto;no Brasil;locale
+contexto;em São Paulo;locale
+contexto;no ES;locale
+contexto;a partir deste mês;time|news
+contexto;neste ano;time
+contexto;em 2025;time
+contexto;na compra do dia a dia;shopping|consumer
+beneficio;pagar menos;cost|consumer|shopping
+beneficio;escolher melhor;guide|list|consumer
+beneficio;se adaptar às novas regras;policy|news
+beneficio;evitar arrependimentos;guide|compare
+beneficio;acertar na compra;shopping|guide
+beneficio_curto;o que muda e quando;news|time|policy
+beneficio_curto;regras em 1 minuto;guide|policy
+beneficio_curto;quem paga e quanto;policy|cost
+beneficio_curto;como escolher sem erro;guide|shopping
+acao;Entenda;news|policy
+acao;Veja;generic
+acao;Aprenda a;guide
+acao;Descubra como;guide|list
+comparacao;antes x depois;news|policy|compare
+comparacao;agora;news|time
+comparacao;com e sem a mudança;compare|policy
+comparacao;preço x qualidade;compare|cost|shopping
+guia;guia rápido;guide
+guia;passo a passo;guide
+guia;checklist essencial;guide|list
+guia;guia de compra;guide|shopping
+pergunta;vale a pena agora?;compare|news|consumer
+pergunta;o que muda para você;news|policy|consumer
+pergunta;quais os erros mais comuns;guide|list
+pergunta;como escolher o melhor;guide|list|shopping
+segmento;consumidores;consumer
+segmento;compras internacionais;shopping
+segmento;pequenos e-commerces;shopping
+segmento;estudantes;education
+segmento;amantes de vinho;alcohol|consumer
+n;3;list
+n;5;list
+n;7;list
+`;
+
+    // ===== Helpers =====
+    const STOP = new Set(["o","a","os","as","de","do","da","dos","das","no","na","nos","nas","em","para","por","um","uma","e","ou","com","sem","que","mais","menos","sobre","até","entre","se","novo","nova","veja","entenda","descubra","saiba","agora","hoje"]);
+
+    function clean(s){return s.trim().replace(/\s+/g,' ')}
+    function hasNumber(s){return /(\d+%?)/.test(s)}
+
+    function extractKeywords(seed){
+      const tokens = (seed.match(/[A-Za-zÀ-ÿ0-9]+/g) || []);
+      const words = tokens.filter(Boolean);
+      const ngrams = [];
+      for (const n of [3,2]){
+        for (let i=0; i<=words.length-n; i++){
+          const chunk = words.slice(i,i+n);
+          if (chunk.every(w=>!STOP.has(w.toLowerCase()))){
+            const phrase = chunk.join(' ');
+            if (!/^\d+%?$/.test(phrase)) ngrams.push(phrase);
+          }
+        }
+      }
+      const singles = words.filter(w=>!STOP.has(w.toLowerCase()) && w.length>3);
+      const seen = new Set();
+      const out = [];
+      for (const x of [...ngrams, ...singles]){
+        const xl = x.toLowerCase();
+        if (!seen.has(xl)){ seen.add(xl); out.push(x) }
+      }
+      return out.slice(0,5);
+    }
+
+    function score(title, topicKeywords=[], minLen=40, maxLen=68){
+      const t = title.toLowerCase();
+      let s = 0; const L = title.length;
+      s += (L>=minLen && L<=maxLen) ? 2 : -1;
+      if (/\b(veja|entenda|confira|saiba|descubra|aprenda|compare|evite|garanta|calcule|planeje|atualize)\b/.test(t)) s+=2;
+      if (/(\b\d+%?|\btop\b|\bguia\b|passo a passo|checklist)/.test(t)) s+=2;
+      for (const kw of topicKeywords){ if (kw && t.includes(kw.toLowerCase())) s+=1 }
+      if (/você não vai acreditar|chocante|imperdível/.test(t)) s-=4;
+      const words = t.split(/\s+/);
+      if (new Set(words).size !== words.length) s-=1;
+      if (topicKeywords.some(kw=>kw && t.startsWith(kw.toLowerCase()))) s+=1;
+      return s;
+    }
+
+    function classifyAngle(t){
+      const tl = t.toLowerCase();
+      if (/\bcomo\b|aprenda|passo a passo/.test(tl)) return "How-to";
+      if (/\b\d+|top|pontos|checklist/.test(tl)) return "Lista/Dados";
+      if (/vale a pena|antes x depois|compare/.test(tl)) return "Comparação/Análise";
+      if (/o que muda|explicado|entenda|guia|regras/.test(tl)) return "Guia/Explicação";
+      if (/\?|quem|quando|quanto/.test(tl)) return "Pergunta";
+      return "Genérico";
+    }
+
+    // ===== INTENTS =====
+    const RX = {
+      list: /(^\d+\b|\btop\b|\bmelhores\b|\branking\b)/i,
+      news: /\b(agora|nesta semana|hoje|lança|anuncia|divulga|entra em vigor|valerá|começa)\b/i,
+      policy: /\b(lei|projeto|regra|imposto|tax(a|e)|tribut|alíquota|governo|ministério)\b/i,
+      money: /\b(preço|preços|barato|caro|cust(o|os)|pagar|economi|desconto|promo|orçamento)\b/i,
+      compare: /\b(vs|x|versus|compar(a|ação)|vale a pena)\b/i,
+      howto: /\b(como|passo a passo|guia|manual|checklist|dicas)\b/i,
+      date: /\b(202[4-9]|202\d|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|hoje|amanhã)\b/i,
+      place: /\b(brasil|são paulo|sp|rj|rio de janeiro|mg|es|vitória|porto alegre|curitiba|lisboa|portugal)\b/i,
+      alcohol: /\b(vinho|vinhos|cerveja|whisky|destilado|espumante)\b/i,
+      shopping: /\b(compr(a|as)|loja|e-commerce|marketplace|amazon|magalu|shein|aliexpress)\b/i,
+    };
+
+    function detectIntents(seed){
+      const t = seed.toLowerCase();
+      const intents = new Set();
+      if (RX.list.test(t)) intents.add("list");
+      if (RX.news.test(t)) intents.add("news");
+      if (RX.policy.test(t)) intents.add("policy");
+      if (RX.money.test(t)) intents.add("cost");
+      if (RX.compare.test(t)) intents.add("compare");
+      if (RX.howto.test(t)) intents.add("guide");
+      if (RX.date.test(t)) intents.add("time");
+      if (RX.place.test(t)) intents.add("locale");
+      if (RX.alcohol.test(t)) intents.add("alcohol");
+      if (RX.shopping.test(t)) intents.add("shopping");
+      intents.add("consumer");
+      return [...intents];
+    }
+
+    // ===== CSV → catálogo SLOT =====
+    function parseCSV(text){
+      const rows = [];
+      text.split(/\r?\n/).forEach(line=>{
+        const l = line.trim();
+        if (!l || l.startsWith('#')) return;
+        const parts = l.split(';');
+        if (parts.length < 2) return;
+        const slot = parts[0].trim();
+        const texto = parts[1].trim();
+        const tags = (parts[2]||'').split('|').map(s=>s.trim()).filter(Boolean);
+        rows.push({slot, t: texto, tags});
+      });
+      const SLOT = {};
+      for (const r of rows){
+        if (!SLOT[r.slot]) SLOT[r.slot] = [];
+        SLOT[r.slot].push({t: r.t, tags: r.tags});
+      }
+      return SLOT;
+    }
+
+    function tokenSet(str){
+      return new Set((str.toLowerCase().match(/[a-zà-ÿ0-9]+/g) || []).filter(w=>w.length>2));
+    }
+
+    function compatScore(item, intents, seed){
+      let s = 0;
+      for (const tag of item.tags||[]) if (intents.includes(tag)) s += 2;
+      const A = tokenSet(item.t); const B = tokenSet(seed);
+      let overlap = 0; for (const w of A) if (B.has(w)) overlap++;
+      s += Math.min(overlap,2);
+      if (intents.includes("list") && /guia|critérios|checklist|pontos|passo/.test(item.t)) s += 1;
+      if (intents.includes("policy") && /regra|muda|quando|quem paga/.test(item.t)) s += 1;
+      if (intents.includes("shopping") && /compra|preço|vale a pena/.test(item.t)) s += 1;
+      return s;
+    }
+
+    function pickTop(slotArr, intents, seed, n=3){
+      if (!Array.isArray(slotArr)) return [];
+      return [...slotArr]
+        .map(it => ({...it, _s: compatScore(it, intents, seed)}))
+        .sort((a,b)=> b._s - a._s)
+        .slice(0, n)
+        .map(it => it.t);
+    }
+
+    function buildSlots(seed, entity, intents){
+      return {
+        contexto: pickTop(CATALOG.contexto, intents, seed, 2),
+        beneficio: pickTop(CATALOG.beneficio, intents, seed, 2),
+        beneficio_curto: pickTop(CATALOG.beneficio_curto, intents, seed, 2),
+        acao: pickTop(CATALOG.acao, intents, seed, 2),
+        comparacao: pickTop(CATALOG.comparacao, intents, seed, 2),
+        guia: pickTop(CATALOG.guia, intents, seed, 2),
+        pergunta: pickTop(CATALOG.pergunta, intents, seed, 2),
+        segmento: pickTop(CATALOG.segmento, intents, seed, 2),
+        n: pickTop(CATALOG.n, intents, seed, 2),
+        ent: [entity]
+      };
+    }
+
     function classifyEntity(seed, hint){
       const ents = extractKeywords(seed);
       let ent = hint || ents.find(e=>!/^(novo|veja|entenda|descubra|saiba)$/i.test(e)) || ents[0] || seed;
@@ -43,7 +328,6 @@
       let s = score(title, topicKeywords, minLen, maxLen);
       
       const tl = title.toLowerCase();
-      const sl = seed.toLowerCase();
       
       // Penaliza redundância de palavras
       const words = tl.split(/\s+/).filter(w => w.length > 3);
@@ -68,10 +352,14 @@
       // Bonifica estruturas claras
       if (/^[^:]+:\s+(o que|como|quando|quem|quanto|vale|guia)/.test(tl)) s += 1;
       
-      // Penaliza se entidade não está no início
-      const firstWord = tl.split(/\s+/)[0];
-      const entTokens = tokenSet(topicKeywords.join(' '));
-      if (!entTokens.has(firstWord)) s -= 1;
+      // Bonifica se entidade está no início
+      const firstWords = tl.split(/\s+/).slice(0, 2).join(' ');
+      for (const kw of topicKeywords) {
+        if (kw && firstWords.includes(kw.toLowerCase())) {
+          s += 1;
+          break;
+        }
+      }
       
       return s;
     }
@@ -137,7 +425,7 @@
       seed = clean(seed);
       const ent = classifyEntity(seed, entityHint);
       const intents = detectIntents(seed);
-      const slots = buildSlots(seed, ent);
+      const slots = buildSlots(seed, ent, intents);
 
       const molds = selectMolds(seed, intents);
       const out = new Set();
@@ -145,7 +433,6 @@
       // Gera combinações limitadas e validadas
       for (const mold of molds){
         const keys = [...mold.matchAll(/\{(\w+)\}/g)].map(m=>m[1]);
-        // LIMITA a 2 variantes por slot para reduzir combinações
         const lists = keys.map(k=>(slots[k]||[""]).slice(0, 2));
         
         function loop(idx, acc){
@@ -170,7 +457,10 @@
       out.add(seed);
       const seedBase = clean(seed.replace(/:.*/, ""));
       if (seedBase.length < 80) {
-        out.add(seedBase + ": o que muda e quando");
+        const safeVariant = seedBase + ": o que muda e quando";
+        if (safeVariant.length <= 90) {
+          out.add(safeVariant);
+        }
       }
 
       const kw = extractKeywords(seed);
@@ -185,3 +475,85 @@
 
       return scored;
     }
+
+    function justify(title){
+      const tl = title.toLowerCase();
+      const parts = [];
+      if (/(o que muda|explicado|entenda|guia)/.test(tl)) parts.push("explica o essencial");
+      if (/\bcomo\b|passo a passo/.test(tl)) parts.push("promete how-to prático");
+      if (/\b\d+|pontos|checklist|top/.test(tl)) parts.push("estrutura de lista atrativa");
+      if (/quando|quem|quanto|\?/.test(tl)) parts.push("curiosidade legítima");
+      if (/no brasil|em /.test(tl)) parts.push("contexto/localização clara");
+      if (/vale a pena/.test(tl)) parts.push("ângulo de decisão/avaliação");
+      if (parts.length===0) parts.push("clareza e relevância para Discover");
+      return parts.join(" · ");
+    }
+
+    function toCSV(rows){
+      const header = ["title","score","len","angle"];
+      const esc = v => '"'+String(v).replaceAll('"','""')+'"';
+      const lines = [header.join(',')];
+      for (const r of rows){ lines.push([esc(r.title), r.score, r.len, esc(r.angle)].join(',')); }
+      return lines.join('\n');
+    }
+
+    function copyAllText(rows){
+      const text = rows.map((r,i)=>`${i+1}. ${r.title}`).join('\n');
+      navigator.clipboard.writeText(text);
+    }
+
+    // ===== UI =====
+    const seedEl = document.getElementById('seed');
+    const hintEl = document.getElementById('hint');
+    const lenEl = document.getElementById('len');
+    const qtyEl = document.getElementById('qty');
+    const goEl = document.getElementById('go');
+    const results = document.getElementById('results');
+    const resultsWrap = document.getElementById('resultsWrap');
+    const copyAllBtn = document.getElementById('copyAll');
+    const dlBtn = document.getElementById('downloadCsv');
+
+    const csvInput = document.getElementById('csvInput');
+    const applyCsv = document.getElementById('applyCsv');
+    const resetCsv = document.getElementById('resetCsv');
+    csvInput.value = CSV_DEFAULT.trim();
+
+    let CATALOG = parseCSV(CSV_DEFAULT);
+
+    function applyCatalog(){
+      CATALOG = parseCSV(csvInput.value);
+    }
+    applyCsv.addEventListener('click', ()=>{ applyCatalog(); alert('Catálogo atualizado!'); });
+    resetCsv.addEventListener('click', ()=>{ csvInput.value = CSV_DEFAULT.trim(); applyCatalog(); });
+
+    function parseLenRange(){
+      const [min,max] = lenEl.value.split('-').map(n=>parseInt(n,10));
+      return {min,max};
+    }
+
+    function render(){
+      const seed = seedEl.value.trim();
+      if (!seed){ resultsWrap.classList.add('hidden'); return; }
+      const {min,max} = parseLenRange();
+      const rows = generate(seed, hintEl.value.trim()||null, min, max);
+      const top = rows.slice(0, parseInt(qtyEl.value,10));
+
+      results.innerHTML = '';
+      top.forEach((r, idx)=>{
+        const li = document.createElement('li');
+        li.className = 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+        li.innerHTML = `
+          <div class="flex items-start justify-between gap-4">
+            <div class="text-sm text-slate-500">#${idx+1}</div>
+            <div class="shrink flex-1">
+              <div class="font-medium leading-snug">${r.title}</div>
+              <div class="text-xs text-slate-500 mt-1">${justify(r.title)}</div>
+            </div>
+            <div class="text-right text-xs text-slate-500">
+              <div>Score: <span class="font-medium">${r.score}</span></div>
+              <div>${r.len} caracteres</div>
+              <div>${r.angle}</div>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button class="copy px-3 py-1.5 rounded-lg border
