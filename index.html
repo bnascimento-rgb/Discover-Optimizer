@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Assistente de Títulos • Google Discover</title>
+  <title>Assistente de Títulos • Gazeta CTR+</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="color-scheme" content="light dark"/>
   <style>
@@ -11,65 +11,91 @@
     .kbd {border:1px solid rgba(0,0,0,.2); padding:.15rem .4rem; border-radius:.375rem; font-size:.75rem;}
     .mono {font-variant-ligatures: none;}
     .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+    .hint { font-size: 11px; color: rgb(100,116,139); }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-indigo-200/60 dark:bg-slate-900 dark:text-slate-100">
   <div class="max-w-5xl mx-auto p-6 sm:p-10">
     <header class="mb-6">
-      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Assistente de Títulos para Google Discover</h1>
-      <p class="text-slate-600 dark:text-slate-300 mt-1">Gera → valida → ranqueia. Foco em clareza, especificidade e anti-clickbait.</p>
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Assistente de Títulos Gazeta CTR+</h1>
+      <p class="text-slate-600 dark:text-slate-300 mt-1">Gera, valida e ranqueia títulos e roteiros otimizados para Google Discover, site e redes sociais.</p>
     </header>
 
-    <!-- Config -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
       <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
         <label class="block text-sm font-medium mb-1" for="title">Título original</label>
-        <textarea id="title" class="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[84px]" placeholder="Cole aqui o título que você já tem…"></textarea>
+        <textarea id="title" class="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[84px]" placeholder="Cole aqui o título base…"></textarea>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div>
-            <label class="block text-sm font-medium mb-1" for="type">Tipo de conteúdo (opcional)</label>
+            <label class="block text-sm font-medium mb-1" for="type">Tipo de conteúdo</label>
             <select id="type" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
               <option value="">Geral</option>
               <option>Notícia quente</option>
-              <option>Guia/Como fazer</option>
-              <option>Lista/Ranking</option>
-              <option>Explicador</option>
-              <option>Análise/Opinião</option>
-              <option>Serviço/Alerta</option>
+              <option>Serviço/Utilidade pública</option>
+              <option>Economia & Consumo</option>
+              <option>Cidades / Espírito Santo</option>
+              <option>Gastronomia e Lazer</option>
+              <option>Esporte</option>
+              <option>Entretenimento e TV</option>
+              <option>Educação e Carreira</option>
+              <option>Guia / Como fazer</option>
+              <option>Explicador / Contexto</option>
+              <option>Opinião / Coluna</option>
+              <option>Lista</option>
+              <option>Receita</option>
+              <option>Galeria de fotos</option>
+              <option>Vídeo para o YouTube</option>
+              <option>Vídeo para redes sociais</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1" for="aud">Tema/Audiência (opcional)</label>
-            <input id="aud" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ex.: Brasil; Android; impostos"/>
+            <input id="aud" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ex.: Vitória; Economia; Cultura"/>
+            <p class="hint mt-1">Essas palavras viram keywords obrigatórias.</p>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1" for="apikey">OpenAI API Key</label>
             <input id="apikey" type="password" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="sk-…"/>
-            <p class="text-[11px] text-slate-500 mt-1">Chave usada apenas localmente no seu navegador.</p>
+            <p class="hint mt-1">Usada apenas localmente no navegador.</p>
           </div>
         </div>
+
+        <details class="mt-3">
+          <summary class="text-sm cursor-pointer">Usar proxy (opcional)</summary>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-medium mb-1" for="proxyUrl">Endpoint do proxy</label>
+              <input id="proxyUrl" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://seu-dominio.com/api/gerar"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="useProxy"> </label>
+              <label class="inline-flex items-center gap-2 text-sm mt-2"><input id="useProxy" type="checkbox" class="rounded"> <span>Enviar via proxy</span></label>
+            </div>
+          </div>
+          <p class="hint mt-1">Se marcado, a chave pode ficar vazia (o proxy usa a sua variável de ambiente).</p>
+        </details>
 
         <div class="flex items-center gap-3 mt-4">
           <button id="btnGenerate" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium shadow-soft">Gerar sugestões</button>
           <button id="btnCopyAll" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 font-medium" disabled>Copiar Top‑3</button>
-          <label class="ml-auto inline-flex items-center gap-2 text-sm"><input id="strictMode" type="checkbox" class="rounded"> <span>Modo estrito (mais rígido)</span></label>
+          <label class="ml-auto inline-flex items-center gap-2 text-sm"><input id="strictMode" type="checkbox" class="rounded"> <span>Modo estrito</span></label>
         </div>
       </div>
 
       <aside class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
-        <h2 class="font-medium mb-2">Como funciona</h2>
+        <h2 class="font-medium mb-2">Sobre o CTR+</h2>
         <ol class="list-decimal list-inside space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
-          <li>Extrai 3–6 <em>keywords</em> do título (e do contexto se houver).</li>
-          <li>Gera 5–7 variações com ancoragem às keywords.</li>
-          <li>Self‑check (LLM) + Validador local (anti-clickbait, tamanho, etc.).</li>
-          <li>Ranqueia por clareza, benefício, especificidade, legibilidade.</li>
+          <li>Extrai e prioriza keywords com base no título e contexto.</li>
+          <li>Gera variações ancoradas (sem inventar entidades).</li>
+          <li>Self‑check + Validador anti-clickbait e tamanho.</li>
+          <li>Ranqueia por clareza, benefício, especificidade e legibilidade.</li>
+          <li>Pronto para integração com métricas de CTR real.</li>
         </ol>
-        <p class="text-xs text-slate-500 mt-3">Dica: pressione <span class="kbd">/</span> para focar no campo de título e <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> para gerar.</p>
+        <p class="text-xs text-slate-500 mt-3">Atalhos: <span class="kbd">/</span> foca no título • <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> gera.</p>
       </aside>
     </section>
 
-    <!-- Results -->
     <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-medium">Sugestões</h2>
@@ -82,7 +108,7 @@
     </section>
 
     <footer class="mt-8 text-xs text-slate-500">
-      <p>Feito para otimizar títulos com foco no Google Discover. Código autônomo, tudo em um arquivo HTML.</p>
+      <p>Gazeta CTR+ — Assistente autônomo de títulos e roteiros multimídia.</p>
     </footer>
   </div>
 
@@ -100,53 +126,108 @@
       /chocante/i,
       /imperdível/i,
       /clique e saiba/i,
-      /veja/i,
-      /descubra(?!r)/i, // "descubra" como imperativo clickbait
-      /top \d+/i,
+      /veja (agora|como|isso)/i,
+      /descubra(?!r)/i,
+      /top \\d+/i,
       /não perca/i,
       /bomb(a|ástico)/i
     ];
 
+    // Padrões por tipo (inclui novos formatos)
     const PATTERNS = {
       'Notícia quente': [
-        '{KW1} {VERBO}: {FOCO}',
-        '{ENTIDADE} lança {FOCO}: o que muda',
-        '{FOCO} chega a {ENTIDADE}: como usar'
+        '{ENTIDADE} {VERBO}: {FOCO} nesta {DATA_RESUMO}',
+        '{FOCO} em {LOCAL}: o que muda hoje',
+        '{ENTIDADE} lança {FOCO}: como usar'
       ],
-      'Guia/Como fazer': [
-        'Como {TAREFA}: {FOCO}',
-        '{FOCO} para iniciantes: passo a passo',
-        '{N} dicas para {TAREFA}'
-      ],
-      'Lista/Ranking': [
-        '{N} opções de {FOCO} para {AUD}',
-        '{FOCO}: {N} modelos que valem a pena'
-      ],
-      'Explicador': [
-        '{ENTIDADE}: o que é, como funciona e quando usar',
-        '{FOCO}: prós, contras e exemplos'
-      ],
-      'Análise/Opinião': [
-        '{FOCO}: por que importa agora',
-        '{ENTIDADE} vs {FOCO}: o que muda'
-      ],
-      'Serviço/Alerta': [
+      'Serviço/Utilidade pública': [
         '{PRAZO}: quem tem direito e como pedir',
-        '{FOCO}: como consultar e evitar erros'
+        '{CIDADE}: ruas/serviços afetados por {FOCO}',
+        'Como {TAREFA} sem erro: passo a passo'
+      ],
+      'Economia & Consumo': [
+        '{PRODUTO} sobe {NUM}%: como impacta seu bolso',
+        'Imposto/conta de {PRODUTO}: o que muda em {MÊS}',
+        'Preço de {PRODUTO}: {N} dicas para pagar menos'
+      ],
+      'Cidades / Espírito Santo': [
+        '{BAIRRO}/{CIDADE}: {OBRA/EVENTO} altera {SERVIÇO}',
+        'Novo {SERVIÇO} começa {DATA_RESUMO}: veja horários',
+        '{FOCO} em {LOCAL}: rotas e alternativas'
+      ],
+      'Gastronomia e Lazer': [
+        '{N} lugares para {ATIVIDADE} em {CIDADE}',
+        '{EVENTO}: o que esperar neste fim de semana',
+        '{PRATO}: onde comer em {CIDADE}'
+      ],
+      'Esporte': [
+        '{TIME1} x {TIME2}: onde assistir e escalações',
+        'Reforço de {TIME}: detalhes do contrato',
+        '{COMPETIÇÃO}: tabela, horários e classificação'
+      ],
+      'Entretenimento e TV': [
+        '{NOVELA/PROGRAMA}: resumo de hoje',
+        '{SÉRIE/FILME}: estreia e onde assistir',
+        'Reality {PROGRAMA}: quem saiu e quem ficou'
+      ],
+      'Educação e Carreira': [
+        '{CONCURSO}: salários e inscrições abertas',
+        'Como passar em {PROVA}: guia rápido',
+        'Cursos gratuitos em {CIDADE}: como se inscrever'
+      ],
+      'Guia / Como fazer': [
+        'Como {TAREFA} em {SITUAÇÃO}: {N} passos práticos',
+        '{ERRO}: como evitar ao {TAREFA}',
+        '{FOCO}: o que é e como usar'
+      ],
+      'Explicador / Contexto': [
+        '{TEMA}: o que é, como funciona e por que importa',
+        '{FOCO}: prós, contras e exemplos',
+        '{ASSUNTO}: perguntas e respostas'
+      ],
+      'Opinião / Coluna': [
+        '{TEMA}: por que precisamos falar sobre isso',
+        '{ASSUNTO}: o que o debate ignora',
+        '{FOCO}: a leitura que faltava'
+      ],
+      'Lista': [
+        '{N} opções de {FOCO} para {AUD}',
+        '{FOCO}: {N} motivos para considerar',
+        '{N} erros comuns em {TAREFA}'
+      ],
+      'Receita': [
+        '{PRATO}: receita simples e rápida',
+        'Como fazer {PRATO} perfeito: {N} truques',
+        '{PRATO} em {TEMPO}: ingredientes e preparo'
+      ],
+      'Galeria de fotos': [
+        '{EVENTO} em {LOCAL}: {N} fotos que resumem o dia',
+        '{TEMA} em imagens: veja {N} cliques',
+        '{CIDADE} ontem e hoje: galeria comparativa'
+      ],
+      'Vídeo para o YouTube': [
+        'YouTube: {FOCO} — passo a passo e dicas',
+        '{TEMA} explicado em {TEMPO}: o que você precisa saber',
+        '{N} erros ao {TAREFA} (e como corrigir)'
+      ],
+      'Vídeo para redes sociais': [
+        'Reels/TikTok: {FOCO} em 30s — como fazer',
+        '{TEMA} em 60s: guia rápido',
+        '{DICA}: truque rápido para {TAREFA}'
       ]
     };
 
     function tokenize(text) {
       return text
         .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9áéíóúãõâêîôûç\s-]/gi, ' ')
-        .split(/\s+/)
+        .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[^a-z0-9áéíóúãõâêîôûç\\s-]/gi, ' ')
+        .split(/\\s+/)
         .filter(Boolean);
     }
 
     function extractKeywords(title, audience = '') {
-      const words = tokenize(`${title} ${audience}`);
+      const words = tokenize(\`\${title} \${audience}\`);
       const freq = new Map();
       for (const w of words) {
         if (STOPWORDS.has(w) || w.length < 3) continue;
@@ -165,14 +246,12 @@
     }
 
     function hasBanned(text) { return BANNED.some(r => r.test(text)); }
-
     function withinLen(t, strict=false) {
       const len = t.trim().length;
       const min = strict ? 38 : 35;
       const max = strict ? 62 : 68;
       return len >= min && len <= max;
     }
-
     function includesKeyword(t, kws) {
       const lt = t.toLowerCase();
       return kws.some(k => lt.includes(k.toLowerCase()));
@@ -185,19 +264,16 @@
       if (/[A-Z]{6,}/.test(t)) score -= 1;
       return Math.max(0, score);
     }
-
     function benefitScore(t) {
-      const patterns = /(como|guia|passo a passo|o que muda|o que é|dicas|lista|alerta|quem tem direito|comparativo|vs)/i;
+      const patterns = /(como|guia|passo a passo|o que muda|o que é|dicas|lista|alerta|quem tem direito|comparativo|vs|onde assistir)/i;
       return patterns.test(t) ? 3 : 1; // 0–3
     }
-
     function specificityScore(t) {
       let s = 0;
-      if (/\d/.test(t)) s += 1;
-      if (/:|–|-/.test(t)) s += 1; // sugere foco/ângulo
+      if (/\\d/.test(t)) s += 1;
+      if (/:|–|-/.test(t)) s += 1;
       return Math.min(2, s);
     }
-
     function clarityScore(t, kws) {
       let count = 0;
       for (const k of kws) if (t.toLowerCase().includes(k.toLowerCase())) count++;
@@ -205,28 +281,42 @@
       if (count === 1) return 2;
       return 0;
     }
-
     function legibilityScore(t) { return withinLen(t) ? 2 : 0; }
-
-    function totalScore(t, kws) {
-      return clarityScore(t, kws) + benefitScore(t) + specificityScore(t) + antiClickbaitScore(t) + legibilityScore(t);
+    function totalScore(t, kws, type) {
+      // Bônus leve baseado no tipo selecionado (ajustável via CTR real)
+      const base = clarityScore(t, kws) + benefitScore(t) + specificityScore(t) + antiClickbaitScore(t) + legibilityScore(t);
+      const bonus = typeBonus(t, type);
+      return base + bonus;
+    }
+    const TYPE_WEIGHTS = {
+      'Serviço/Utilidade pública': { pattern: /(como|prazo|quem tem direito|passo a passo)/i, bonus: 1.0 },
+      'Lista': { pattern: /^\\s*\\d+|\\b\\d+\\b/i, bonus: 0.8 },
+      'Esporte': { pattern: /(onde assistir|x|vs|escalações)/i, bonus: 0.6 },
+      'Vídeo para redes sociais': { pattern: /(em \\d+s|rápido|guia rápido|truque)/i, bonus: 0.6 },
+      'Vídeo para o YouTube': { pattern: /(passo a passo|em \\d+ minutos|explicado)/i, bonus: 0.6 },
+      'Receita': { pattern: /(como fazer|ingredientes|preparo|em \\d+ min|perfeito)/i, bonus: 0.8 },
+      'Galeria de fotos': { pattern: /(fotos|galeria|imagens|cliques)/i, bonus: 0.8 }
+    };
+    function typeBonus(t, type) {
+      const rule = TYPE_WEIGHTS[type];
+      if (!rule) return 0;
+      return rule.pattern.test(t) ? rule.bonus : 0;
     }
 
     function explain(t, kws) {
       const reasons = [];
       if (clarityScore(t, kws) >= 2) reasons.push('Entidade clara');
-      if (/\d/.test(t)) reasons.push('Número específico');
+      if (/\\d/.test(t)) reasons.push('Número específico');
       if (/(como|guia|passo a passo)/i.test(t)) reasons.push('Benefício/como fazer');
-      if (/(o que muda|o que é)/i.test(t)) reasons.push('Ângulo explícito');
+      if (/(o que muda|o que é|onde assistir)/i.test(t)) reasons.push('Ângulo explícito');
       if (withinLen(t)) reasons.push('Tamanho adequado');
       if (hasBanned(t)) reasons.push('⚠️ Possível clickbait');
       return reasons.slice(0,3);
     }
 
-    // ===== OpenAI Calls =====
-    const DEFAULT_MODEL = 'gpt-4o-mini'; // ajuste se preferir
+    const DEFAULT_MODEL = 'gpt-4o-mini';
 
-    async function openAIChat({messages, apiKey, model=DEFAULT_MODEL, temperature=0.3, max_tokens=256}) {
+    async function openAIChatDirect({messages, apiKey, model=DEFAULT_MODEL, temperature=0.3, max_tokens=256}) {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -243,28 +333,40 @@
           max_tokens
         })
       });
-      if (!res.ok) throw new Error(`OpenAI: ${res.status} ${res.statusText}`);
+      if (!res.ok) throw new Error(\`OpenAI: \${res.status} \${res.statusText}\`);
       const data = await res.json();
       return data.choices?.[0]?.message?.content?.trim();
+    }
+
+    async function openAIChatViaProxy({messages, proxyUrl, temperature=0.3, max_tokens=256}) {
+      const res = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, temperature, max_tokens })
+      });
+      if (!res.ok) throw new Error(\`Proxy: \${res.status} \${res.statusText}\`);
+      const data = await res.json();
+      // espere que o proxy padronize { content: "..." } ou {choices:[{message:{content}}]}
+      return data.content || data.choices?.[0]?.message?.content?.trim();
     }
 
     function buildSystemPrompt() {
       return {
         role: 'system',
         content: [
-          'Você é um otimizador de títulos para o Google Discover.',
+          'Você é um otimizador de títulos para o Google Discover e mídias digitais.',
           'Regras:',
           '1) Não invente fatos. Não adicione entidades que não estejam nas PALAVRAS-CHAVE.',
           '2) 35–65 caracteres; linguagem clara; sem clickbait; sem “veja”, “descubra”, “você não vai acreditar”.',
           '3) Retorne apenas um JSON array de strings (sem comentários).',
           '4) Cada título deve manter ao menos uma das PALAVRAS-CHAVE.',
           '5) Varie a estrutura (lista, como fazer, novidade, dado).'
-        ].join('\n')
+        ].join('\\n')
       };
     }
 
     function buildUserPrompt({title, keywords, tipo}) {
-      const tipoLine = tipo ? `\nTIPO: ${tipo}` : '';
+      const tipoLine = tipo ? `\\nTIPO: ${tipo}` : '';
       return {
         role: 'user',
         content: [
@@ -273,7 +375,7 @@
           'OBJETIVO: aumentar CTR no Discover com clareza e especificidade.',
           'GERAR: 6 títulos alternativos, variados em estrutura (lista, como fazer, novidade, dado).',
           'FORMATO DE RESPOSTA: JSON array de strings, sem comentários.' + tipoLine
-        ].join('\n')
+        ].join('\\n')
       };
     }
 
@@ -288,11 +390,10 @@
           'Critérios para ok=true: contém >=1 keyword; não adiciona fato novo; evita clickbait; 35–65 caracteres.',
           `CANDIDATOS: ${JSON.stringify(candidates)}`,
           'FORMATO: JSON array com mesmo número de itens.'
-        ].join('\n')
+        ].join('\\n')
       };
     }
 
-    // ===== Render =====
     function renderResults({top, others, keywords}) {
       const res = $('#results');
       res.innerHTML = '';
@@ -304,7 +405,7 @@
           <div class="flex-1">
             <div class="text-base sm:text-lg font-medium leading-snug">${escapeHtml(t)}</div>
             <div class="mt-2 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap gap-x-2 gap-y-1">
-              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">score ${score}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">score ${score.toFixed(1)}</span>
               <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${t.length} chars</span>
               ${reasons.map(r=>`<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${escapeHtml(r)}</span>`).join('')}
             </div>
@@ -328,7 +429,7 @@
       } else more.classList.add('hidden');
 
       $('#btnCopyAll').disabled = !top.length;
-      $('#btnCopyAll').onclick = () => copyText(top.map(x=>x.text).join('\n'));
+      $('#btnCopyAll').onclick = () => copyText(top.map(x=>x.text).join('\\n'));
 
       $('#keywordBadge').innerHTML = `Keywords: <span class="mono">${keywords.map(escapeHtml).join(', ')}</span>`;
     }
@@ -336,12 +437,10 @@
     function escapeHtml(s){
       return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
     }
-
     async function copyText(text){
       try{ await navigator.clipboard.writeText(text); toast('Copiado!'); }
       catch{ toast('Não foi possível copiar'); }
     }
-
     function toast(msg){
       const t = document.createElement('div');
       t.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg';
@@ -349,7 +448,6 @@
       document.body.appendChild(t);
       setTimeout(()=>t.remove(), 1500);
     }
-
     function dedup(list, threshold=0.9){
       const out = [];
       for (const s of list){
@@ -357,7 +455,6 @@
       }
       return out;
     }
-
     function localValidate(cand, kws, strict=false){
       const ok = includesKeyword(cand, kws) && withinLen(cand, strict) && !hasBanned(cand);
       let motivo = '';
@@ -367,27 +464,40 @@
       return {ok, motivo};
     }
 
-    // ===== Main Flow =====
+    // ===== CTR hooks (opcional) =====
+    // Para integrar: implemente sendMetrics(payload) chamando seu endpoint/planilha.
+    async function sendMetrics(payload){
+      // Exemplo (desabilitado): 
+      // await fetch('https://seu-endpoint-de-metricas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      // console.log('Métricas enviadas', payload);
+    }
+
+    // ===== Main =====
     async function generate(){
       const title = $('#title').value.trim();
       const tipo = $('#type').value;
       const aud = $('#aud').value.trim();
       const apiKey = $('#apikey').value.trim();
       const strict = $('#strictMode').checked;
+      const useProxy = $('#useProxy').checked;
+      const proxyUrl = $('#proxyUrl').value.trim();
 
       if (!title) { toast('Cole um título'); $('#title').focus(); return; }
-      if (!apiKey) { toast('Informe sua OpenAI API key'); $('#apikey').focus(); return; }
+      if (!useProxy && !apiKey) { toast('Informe sua OpenAI API key ou use proxy'); $('#apikey').focus(); return; }
+      if (useProxy && !proxyUrl) { toast('Informe o endpoint do proxy'); $('#proxyUrl').focus(); return; }
 
       // 1) Keywords
       let keywords = extractKeywords(title, aud);
       if (aud) keywords = dedup([...keywords, ...tokenize(aud).filter(w=>!STOPWORDS.has(w))]).slice(0,6);
 
-      // 2) Generation
+      // 2) Geração
       let raw;
       try {
         const sys = buildSystemPrompt();
         const user = buildUserPrompt({title, keywords, tipo});
-        raw = await openAIChat({messages: [sys, user], apiKey, temperature: 0.3, max_tokens: 220});
+        raw = useProxy
+          ? await openAIChatViaProxy({messages: [sys, user], proxyUrl, temperature: 0.3, max_tokens: 220})
+          : await openAIChatDirect({messages: [sys, user], apiKey, temperature: 0.3, max_tokens: 220});
       } catch (e) {
         console.error(e);
         toast('Erro na geração');
@@ -398,55 +508,61 @@
       try {
         candidates = JSON.parse(raw);
       } catch {
-        // tenta recuperar JSON de dentro do texto
-        const match = raw?.match(/\[[\s\S]*\]/);
-        candidates = match ? JSON.parse(match[0]) : [];
+        const match = raw?.match(/\\[[\\s\\S]*\\]/);
+        try { candidates = match ? JSON.parse(match[0]) : []; } catch { candidates = []; }
       }
       candidates = (candidates || []).map(s=>String(s)).filter(Boolean);
       candidates = dedup(candidates, 0.85).slice(0, 10);
-
       if (!candidates.length){ toast('Nenhum candidato gerado'); return; }
 
-      // 3) Self-check (LLM) — baratinho
+      // 3) Self-check
       let checks = [];
       try {
         const selfUser = buildSelfCheckPrompt({title, keywords, candidates});
-        const rawCheck = await openAIChat({messages: [buildSystemPrompt(), selfUser], apiKey, temperature: 0.0, max_tokens: 220});
+        const rawCheck = useProxy
+          ? await openAIChatViaProxy({messages: [buildSystemPrompt(), selfUser], proxyUrl, temperature: 0.0, max_tokens: 220})
+          : await openAIChatDirect({messages: [buildSystemPrompt(), selfUser], apiKey, temperature: 0.0, max_tokens: 220});
         checks = JSON.parse(rawCheck);
       } catch (e) {
-        // se falhar, usa somente validador local
         checks = candidates.map(c => localValidate(c, keywords, strict));
       }
 
-      // 4) Validação local adicional + score
+      // 4) Validação + score
       const scored = candidates.map((text, i) => {
         const sc = checks[i] && typeof checks[i].ok === 'boolean' ? checks[i] : localValidate(text, keywords, strict);
         if (!sc.ok) return null;
-        const score = totalScore(text, keywords);
+        const score = totalScore(text, keywords, tipo);
         return {text, score, reasons: explain(text, keywords)};
       }).filter(Boolean);
 
-      // filtros finais
       const uniq = [];
       for (const item of scored){
         if (uniq.every(x => jaccard(item.text, x.text) < 0.8)) uniq.push(item);
       }
-
       uniq.sort((a,b)=>b.score - a.score || a.text.length - b.text.length);
 
       const top = uniq.slice(0,3);
       const others = uniq.slice(3);
-
       renderResults({top, others, keywords});
+
+      // 5) Enviar metadados (opcional)
+      try{
+        await sendMetrics({
+          ts: new Date().toISOString(),
+          tipo,
+          keywords,
+          title_original: title,
+          top_suggestions: top.map(x=>x.text),
+          all_count: uniq.length
+        });
+      } catch(e){ /* silencioso */ }
     }
 
-    // ===== Events =====
     $('#btnGenerate').addEventListener('click', generate);
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== $('#title')) { e.preventDefault(); $('#title').focus(); }
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generate(); }
     });
-
   </script>
 </body>
 </html>
