@@ -17,8 +17,7 @@
       </p>
     </header>
 
-    <!-- FORM PRINCIPAL -->
-    <form id="titleForm" class="space-y-6">
+    <section class="space-y-6">
       <!-- API Key -->
       <div>
         <label for="apikey" class="block text-sm font-medium text-slate-700 mb-1">
@@ -26,7 +25,6 @@
         </label>
         <input
           id="apikey"
-          name="apikey"
           type="password"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
           placeholder="sk-..."
@@ -43,7 +41,6 @@
         </label>
         <textarea
           id="title"
-          name="title"
           rows="2"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
           placeholder="Cole aqui o título original da matéria..."
@@ -58,7 +55,6 @@
           </label>
           <select
             id="type"
-            name="type"
             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
           >
             <option value="">Detectar automaticamente</option>
@@ -83,7 +79,6 @@
           </label>
           <input
             id="aud"
-            name="aud"
             type="text"
             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
             placeholder="Ex.: leitores de economia, torcedores de time X, pessoas buscando saúde, etc."
@@ -94,16 +89,15 @@
       <!-- Configurações -->
       <div class="flex flex-wrap items-center gap-4">
         <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-          <input id="strictMode" name="strictMode" type="checkbox" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+          <input id="strictMode" type="checkbox" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
           <span>Modo mais conservador (menos criativo)</span>
         </label>
       </div>
 
-      <!-- Botão (submit do form) -->
+      <!-- Botão -->
       <div class="flex items-center gap-3">
         <button
           id="btnGenerate"
-          type="submit"
           class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
         >
           <span>Gerar sugestões</span>
@@ -111,7 +105,7 @@
         </button>
         <p id="status" class="text-xs text-slate-500"></p>
       </div>
-    </form>
+    </section>
 
     <!-- Resultados -->
     <section class="mt-10">
@@ -171,8 +165,9 @@
         card.className =
           "rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-shadow text-sm";
 
+        // Ex.: "1. Título — Editorias mais adequadas: ..."
         const clean = line.replace(/^\d+\.\s*/, "").trim();
-        const [title, meta] = clean.split(/—| - /);
+        const [title, meta] = clean.split(/—| - /); // tenta separar título de metadados
 
         const titleEl = document.createElement("h3");
         titleEl.className = "font-semibold";
@@ -265,7 +260,8 @@ Formato de resposta:
           model: DEFAULT_MODEL,
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: userPromptLines.join("\n") }
+            { role: "user", content: userPromptLines.join("
+") }
           ],
           temperature: strict ? 0.5 : 0.9,
           max_tokens: 600
@@ -288,13 +284,19 @@ Formato de resposta:
 
         const data = await response.json();
         const content = data.choices?.[0]?.message?.content || "";
+
+        // Normaliza em linhas e aceita tanto lista numerada quanto bullets
         const lines = content
-          .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => /^\d+\./.test(l));
+          .split(/\r?\n/)
+          .map((l) => l.replace(/^\s*[-*]\s*/, "").trim()) // remove bullets como "-"
+          .filter(Boolean);
+
+        if (!lines.length) {
+          console.warn("Resposta da API sem linhas detectáveis:", content);
+        }
 
         renderResults(lines);
-      } catch (err):
+      } catch (err) {
         console.error(err);
         showError(err.message || "Erro ao gerar sugestões. Tente novamente.");
       } finally {
@@ -302,15 +304,12 @@ Formato de resposta:
       }
     }
 
-    document.getElementById("titleForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      generate();
-    });
-
-    document.getElementById("title").addEventListener("keydown", (e) => {
+    // Eventos
+    $("#btnGenerate").addEventListener("click", generate);
+    $("#title").addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
-        document.getElementById("titleForm").requestSubmit();
+        generate();
       }
     });
   </script>
