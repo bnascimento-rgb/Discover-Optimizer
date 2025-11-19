@@ -1,452 +1,318 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
+  <title>Otimizador de títulos para Discover</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Assistente de Títulos • Google Discover</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="color-scheme" content="light dark"/>
-  <style>
-    :root { color-scheme: light dark; }
-    .kbd {border:1px solid rgba(0,0,0,.2); padding:.15rem .4rem; border-radius:.375rem; font-size:.75rem;}
-    .mono {font-variant-ligatures: none;}
-    .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,.08); }
-  </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-indigo-200/60 dark:bg-slate-900 dark:text-slate-100">
-  <div class="max-w-5xl mx-auto p-6 sm:p-10">
-    <header class="mb-6">
-      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Assistente de Títulos para Google Discover</h1>
-      <p class="text-slate-600 dark:text-slate-300 mt-1">Gera → valida → ranqueia. Foco em clareza, especificidade e anti-clickbait.</p>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight mb-1">
+        Otimizador de títulos para Google Discover
+      </h1>
+      <p class="text-slate-600">
+        Cole o título da matéria, escolha a editoria e gere versões otimizadas para Discover, site e redes.
+      </p>
     </header>
 
-    <!-- Config -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
-      <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
-        <label class="block text-sm font-medium mb-1" for="title">Título original</label>
-        <textarea id="title" class="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[84px]" placeholder="Cole aqui o título que você já tem…"></textarea>
+    <!-- FORM PRINCIPAL -->
+    <form id="titleForm" class="space-y-6">
+      <!-- API Key -->
+      <div>
+        <label for="apikey" class="block text-sm font-medium text-slate-700 mb-1">
+          OpenAI API key
+        </label>
+        <input
+          id="apikey"
+          name="apikey"
+          type="password"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+          placeholder="sk-..."
+        />
+        <p class="mt-1 text-xs text-slate-500">
+          A chave NUNCA é enviada para o servidor do site — a chamada vai direto para a API da OpenAI pelo seu navegador.
+        </p>
+      </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <div>
-            <label class="block text-sm font-medium mb-1" for="type">Tipo de conteúdo (opcional)</label>
-            <select id="type" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-              <option value="">Geral</option>
-              <option>Notícia quente</option>
-              <option>Guia/Como fazer</option>
-              <option>Lista/Ranking</option>
-              <option>Explicador</option>
-              <option>Análise/Opinião</option>
-              <option>Serviço/Alerta</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="aud">Tema/Audiência (opcional)</label>
-            <input id="aud" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ex.: Brasil; Android; impostos"/>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="apikey">OpenAI API Key</label>
-            <input id="apikey" type="password" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="sk-…"/>
-            <p class="text-[11px] text-slate-500 mt-1">Chave usada apenas localmente no seu navegador.</p>
-          </div>
+      <!-- Título original -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-slate-700 mb-1">
+          Título original
+        </label>
+        <textarea
+          id="title"
+          name="title"
+          rows="2"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+          placeholder="Cole aqui o título original da matéria..."
+        ></textarea>
+      </div>
+
+      <!-- Editorias / contexto -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="type" class="block text-sm font-medium text-slate-700 mb-1">
+            Tipo de conteúdo / editoria principal
+          </label>
+          <select
+            id="type"
+            name="type"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+          >
+            <option value="">Detectar automaticamente</option>
+            <option>Serviço / Alerta</option>
+            <option>Notícia quente</option>
+            <option>Guia / Como fazer</option>
+            <option>Lista</option>
+            <option>Receita</option>
+            <option>Galeria de fotos</option>
+            <option>Vídeo para YouTube</option>
+            <option>Vídeo para redes sociais</option>
+            <option>Análise / Opinião</option>
+          </select>
+          <p class="mt-1 text-xs text-slate-500">
+            Se você escolher uma editoria, o modelo vai tentar encaixar os títulos nesse formato.
+          </p>
         </div>
 
-        <div class="flex items-center gap-3 mt-4">
-          <button id="btnGenerate" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium shadow-soft">Gerar sugestões</button>
-          <button id="btnCopyAll" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 font-medium" disabled>Copiar Top‑3</button>
-          <label class="ml-auto inline-flex items-center gap-2 text-sm"><input id="strictMode" type="checkbox" class="rounded"> <span>Modo estrito (mais rígido)</span></label>
+        <div>
+          <label for="aud" class="block text-sm font-medium text-slate-700 mb-1">
+            Público / contexto (opcional)
+          </label>
+          <input
+            id="aud"
+            name="aud"
+            type="text"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            placeholder="Ex.: leitores de economia, torcedores de time X, pessoas buscando saúde, etc."
+          />
         </div>
       </div>
 
-      <aside class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
-        <h2 class="font-medium mb-2">Como funciona</h2>
-        <ol class="list-decimal list-inside space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
-          <li>Extrai 3–6 <em>keywords</em> do título (e do contexto se houver).</li>
-          <li>Gera 5–7 variações com ancoragem às keywords.</li>
-          <li>Self‑check (LLM) + Validador local (anti-clickbait, tamanho, etc.).</li>
-          <li>Ranqueia por clareza, benefício, especificidade, legibilidade.</li>
-        </ol>
-        <p class="text-xs text-slate-500 mt-3">Dica: pressione <span class="kbd">/</span> para focar no campo de título e <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> para gerar.</p>
-      </aside>
-    </section>
-
-    <!-- Results -->
-    <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-soft">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-medium">Sugestões</h2>
-        <div id="keywordBadge" class="text-xs text-slate-500"></div>
+      <!-- Configurações -->
+      <div class="flex flex-wrap items-center gap-4">
+        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input id="strictMode" name="strictMode" type="checkbox" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+          <span>Modo mais conservador (menos criativo)</span>
+        </label>
       </div>
-      <div id="results" class="grid gap-3"></div>
-      <div id="more" class="mt-4 hidden">
-        <button id="btnMore" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600">Ver alternativas</button>
-      </div>
-    </section>
 
-    <footer class="mt-8 text-xs text-slate-500">
-      <p>Feito para otimizar títulos com foco no Google Discover. Código autônomo, tudo em um arquivo HTML.</p>
-    </footer>
-  </div>
+      <!-- Botão (submit do form) -->
+      <div class="flex items-center gap-3">
+        <button
+          id="btnGenerate"
+          type="submit"
+          class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
+        >
+          <span>Gerar sugestões</span>
+          <span id="loadingSpinner" class="hidden animate-spin border-2 border-white/40 border-t-white rounded-full w-4 h-4"></span>
+        </button>
+        <p id="status" class="text-xs text-slate-500"></p>
+      </div>
+    </form>
+
+    <!-- Resultados -->
+    <section class="mt-10">
+      <h2 class="text-lg font-semibold mb-3">Sugestões geradas</h2>
+      <div id="results" class="space-y-3"></div>
+    </section>
+  </main>
 
   <script>
-    // ===== Utilities =====
-    const $ = (s) => document.querySelector(s);
-    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    const DEFAULT_MODEL = "gpt-4.1-mini"; // troque se quiser usar outro
 
-    const STOPWORDS = new Set([
-      'a','as','o','os','um','uma','de','do','da','dos','das','e','ou','com','para','por','no','na','nos','nas','em','que','se','sobre','sem','até','entre','como','mais','menos','já','sua','seu','suas','seus','é','ao','à','às','aos','meu','minha','meus','minhas','lhe','eles','elas','ele','ela','isso','aquilo','este','esta','estes','estas','essa','essas','esses','aquele','aquela','aqueles','aquelas'
-    ]);
+    const $ = (sel) => document.querySelector(sel);
 
-    const BANNED = [
-      /você não vai acreditar/i,
-      /chocante/i,
-      /imperdível/i,
-      /clique e saiba/i,
-      /veja/i,
-      /descubra(?!r)/i, // "descubra" como imperativo clickbait
-      /top \d+/i,
-      /não perca/i,
-      /bomb(a|ástico)/i
-    ];
+    function setLoading(isLoading) {
+      const btn = $("#btnGenerate");
+      const spinner = $("#loadingSpinner");
+      const status = $("#status");
 
-    const PATTERNS = {
-      'Notícia quente': [
-        '{KW1} {VERBO}: {FOCO}',
-        '{ENTIDADE} lança {FOCO}: o que muda',
-        '{FOCO} chega a {ENTIDADE}: como usar'
-      ],
-      'Guia/Como fazer': [
-        'Como {TAREFA}: {FOCO}',
-        '{FOCO} para iniciantes: passo a passo',
-        '{N} dicas para {TAREFA}'
-      ],
-      'Lista/Ranking': [
-        '{N} opções de {FOCO} para {AUD}',
-        '{FOCO}: {N} modelos que valem a pena'
-      ],
-      'Explicador': [
-        '{ENTIDADE}: o que é, como funciona e quando usar',
-        '{FOCO}: prós, contras e exemplos'
-      ],
-      'Análise/Opinião': [
-        '{FOCO}: por que importa agora',
-        '{ENTIDADE} vs {FOCO}: o que muda'
-      ],
-      'Serviço/Alerta': [
-        '{PRAZO}: quem tem direito e como pedir',
-        '{FOCO}: como consultar e evitar erros'
-      ]
-    };
-
-    function tokenize(text) {
-      return text
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9áéíóúãõâêîôûç\s-]/gi, ' ')
-        .split(/\s+/)
-        .filter(Boolean);
-    }
-
-    function extractKeywords(title, audience = '') {
-      const words = tokenize(`${title} ${audience}`);
-      const freq = new Map();
-      for (const w of words) {
-        if (STOPWORDS.has(w) || w.length < 3) continue;
-        freq.set(w, (freq.get(w) || 0) + 1);
+      if (isLoading) {
+        btn.disabled = true;
+        spinner.classList.remove("hidden");
+        status.textContent = "Gerando títulos…";
+      } else {
+        btn.disabled = false;
+        spinner.classList.add("hidden");
+        status.textContent = "";
       }
-      const ranked = [...freq.entries()].sort((a,b)=>b[1]-a[1]).map(([w])=>w);
-      return ranked.slice(0, Math.max(3, Math.min(6, ranked.length)));
     }
 
-    function jaccard(a, b) {
-      const A = new Set(tokenize(a));
-      const B = new Set(tokenize(b));
-      const inter = new Set([...A].filter(x=>B.has(x))).size;
-      const uni = new Set([...A, ...B]).size || 1;
-      return inter / uni;
+    function showError(msg) {
+      const status = $("#status");
+      status.textContent = msg;
+      status.classList.remove("text-slate-500");
+      status.classList.add("text-red-600");
+      setTimeout(() => {
+        status.textContent = "";
+        status.classList.remove("text-red-600");
+        status.classList.add("text-slate-500");
+      }, 6000);
     }
 
-    function hasBanned(text) { return BANNED.some(r => r.test(text)); }
+    function renderResults(lines) {
+      const container = $("#results");
+      container.innerHTML = "";
 
-    function withinLen(t, strict=false) {
-      const len = t.trim().length;
-      const min = strict ? 38 : 35;
-      const max = strict ? 62 : 68;
-      return len >= min && len <= max;
-    }
-
-    function includesKeyword(t, kws) {
-      const lt = t.toLowerCase();
-      return kws.some(k => lt.includes(k.toLowerCase()));
-    }
-
-    function antiClickbaitScore(t) {
-      let score = 2; // 0-2
-      if (hasBanned(t)) score -= 2;
-      if (/[!]{2,}/.test(t)) score -= 1;
-      if (/[A-Z]{6,}/.test(t)) score -= 1;
-      return Math.max(0, score);
-    }
-
-    function benefitScore(t) {
-      const patterns = /(como|guia|passo a passo|o que muda|o que é|dicas|lista|alerta|quem tem direito|comparativo|vs)/i;
-      return patterns.test(t) ? 3 : 1; // 0–3
-    }
-
-    function specificityScore(t) {
-      let s = 0;
-      if (/\d/.test(t)) s += 1;
-      if (/:|–|-/.test(t)) s += 1; // sugere foco/ângulo
-      return Math.min(2, s);
-    }
-
-    function clarityScore(t, kws) {
-      let count = 0;
-      for (const k of kws) if (t.toLowerCase().includes(k.toLowerCase())) count++;
-      if (count >= 2) return 3;
-      if (count === 1) return 2;
-      return 0;
-    }
-
-    function legibilityScore(t) { return withinLen(t) ? 2 : 0; }
-
-    function totalScore(t, kws) {
-      return clarityScore(t, kws) + benefitScore(t) + specificityScore(t) + antiClickbaitScore(t) + legibilityScore(t);
-    }
-
-    function explain(t, kws) {
-      const reasons = [];
-      if (clarityScore(t, kws) >= 2) reasons.push('Entidade clara');
-      if (/\d/.test(t)) reasons.push('Número específico');
-      if (/(como|guia|passo a passo)/i.test(t)) reasons.push('Benefício/como fazer');
-      if (/(o que muda|o que é)/i.test(t)) reasons.push('Ângulo explícito');
-      if (withinLen(t)) reasons.push('Tamanho adequado');
-      if (hasBanned(t)) reasons.push('⚠️ Possível clickbait');
-      return reasons.slice(0,3);
-    }
-
-    // ===== OpenAI Calls =====
-    const DEFAULT_MODEL = 'gpt-4o-mini'; // ajuste se preferir
-
-    async function openAIChat({messages, apiKey, model=DEFAULT_MODEL, temperature=0.3, max_tokens=256}) {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model,
-          temperature,
-          top_p: 0.8,
-          frequency_penalty: 0.2,
-          presence_penalty: 0.0,
-          messages,
-          max_tokens
-        })
-      });
-      if (!res.ok) throw new Error(`OpenAI: ${res.status} ${res.statusText}`);
-      const data = await res.json();
-      return data.choices?.[0]?.message?.content?.trim();
-    }
-
-    function buildSystemPrompt() {
-      return {
-        role: 'system',
-        content: [
-          'Você é um otimizador de títulos para o Google Discover.',
-          'Regras:',
-          '1) Não invente fatos. Não adicione entidades que não estejam nas PALAVRAS-CHAVE.',
-          '2) 35–65 caracteres; linguagem clara; sem clickbait; sem “veja”, “descubra”, “você não vai acreditar”.',
-          '3) Retorne apenas um JSON array de strings (sem comentários).',
-          '4) Cada título deve manter ao menos uma das PALAVRAS-CHAVE.',
-          '5) Varie a estrutura (lista, como fazer, novidade, dado).'
-        ].join('\n')
-      };
-    }
-
-    function buildUserPrompt({title, keywords, tipo}) {
-      const tipoLine = tipo ? `\nTIPO: ${tipo}` : '';
-      return {
-        role: 'user',
-        content: [
-          `TÍTULO_ORIGINAL: "${title}"`,
-          `PALAVRAS-CHAVE: ${JSON.stringify(keywords)}`,
-          'OBJETIVO: aumentar CTR no Discover com clareza e especificidade.',
-          'GERAR: 6 títulos alternativos, variados em estrutura (lista, como fazer, novidade, dado).',
-          'FORMATO DE RESPOSTA: JSON array de strings, sem comentários.' + tipoLine
-        ].join('\n')
-      };
-    }
-
-    function buildSelfCheckPrompt({title, keywords, candidates}) {
-      return {
-        role: 'user',
-        content: [
-          `TÍTULO_ORIGINAL: "${title}"`,
-          `PALAVRAS-CHAVE: ${JSON.stringify(keywords)}`,
-          'Abaixo estão candidatos de título. Para cada um, responda uma linha no JSON com:',
-          '{"ok": boolean, "motivo": string curta}.',
-          'Critérios para ok=true: contém >=1 keyword; não adiciona fato novo; evita clickbait; 35–65 caracteres.',
-          `CANDIDATOS: ${JSON.stringify(candidates)}`,
-          'FORMATO: JSON array com mesmo número de itens.'
-        ].join('\n')
-      };
-    }
-
-    // ===== Render =====
-    function renderResults({top, others, keywords}) {
-      const res = $('#results');
-      res.innerHTML = '';
-
-      const makeCard = (t, score, reasons) => {
-        const el = document.createElement('div');
-        el.className = 'rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 flex items-start gap-3';
-        el.innerHTML = `
-          <div class="flex-1">
-            <div class="text-base sm:text-lg font-medium leading-snug">${escapeHtml(t)}</div>
-            <div class="mt-2 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap gap-x-2 gap-y-1">
-              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">score ${score}</span>
-              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${t.length} chars</span>
-              ${reasons.map(r=>`<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700">${escapeHtml(r)}</span>`).join('')}
-            </div>
-          </div>
-          <div class="flex flex-col items-end gap-2">
-            <button class="copy px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm">Copiar</button>
-          </div>`;
-        el.querySelector('button.copy').addEventListener('click', () => copyText(t));
-        return el;
-      };
-
-      top.forEach(item => res.appendChild(makeCard(item.text, item.score, item.reasons)));
-
-      const more = $('#more');
-      if (others.length) {
-        more.classList.remove('hidden');
-        $('#btnMore').onclick = () => {
-          others.forEach(item => res.appendChild(makeCard(item.text, item.score, item.reasons)));
-          more.classList.add('hidden');
-        };
-      } else more.classList.add('hidden');
-
-      $('#btnCopyAll').disabled = !top.length;
-      $('#btnCopyAll').onclick = () => copyText(top.map(x=>x.text).join('\n'));
-
-      $('#keywordBadge').innerHTML = `Keywords: <span class="mono">${keywords.map(escapeHtml).join(', ')}</span>`;
-    }
-
-    function escapeHtml(s){
-      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-    }
-
-    async function copyText(text){
-      try{ await navigator.clipboard.writeText(text); toast('Copiado!'); }
-      catch{ toast('Não foi possível copiar'); }
-    }
-
-    function toast(msg){
-      const t = document.createElement('div');
-      t.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg';
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(()=>t.remove(), 1500);
-    }
-
-    function dedup(list, threshold=0.9){
-      const out = [];
-      for (const s of list){
-        if (out.every(t => jaccard(s, t) < threshold)) out.push(s);
-      }
-      return out;
-    }
-
-    function localValidate(cand, kws, strict=false){
-      const ok = includesKeyword(cand, kws) && withinLen(cand, strict) && !hasBanned(cand);
-      let motivo = '';
-      if (!includesKeyword(cand, kws)) motivo = 'não contém keyword';
-      else if (!withinLen(cand, strict)) motivo = 'tamanho fora da faixa';
-      else if (hasBanned(cand)) motivo = 'possível clickbait';
-      return {ok, motivo};
-    }
-
-    // ===== Main Flow =====
-    async function generate(){
-      const title = $('#title').value.trim();
-      const tipo = $('#type').value;
-      const aud = $('#aud').value.trim();
-      const apiKey = $('#apikey').value.trim();
-      const strict = $('#strictMode').checked;
-
-      if (!title) { toast('Cole um título'); $('#title').focus(); return; }
-      if (!apiKey) { toast('Informe sua OpenAI API key'); $('#apikey').focus(); return; }
-
-      // 1) Keywords
-      let keywords = extractKeywords(title, aud);
-      if (aud) keywords = dedup([...keywords, ...tokenize(aud).filter(w=>!STOPWORDS.has(w))]).slice(0,6);
-
-      // 2) Generation
-      let raw;
-      try {
-        const sys = buildSystemPrompt();
-        const user = buildUserPrompt({title, keywords, tipo});
-        raw = await openAIChat({messages: [sys, user], apiKey, temperature: 0.3, max_tokens: 220});
-      } catch (e) {
-        console.error(e);
-        toast('Erro na geração');
+      if (!lines.length) {
+        container.innerHTML =
+          '<p class="text-sm text-slate-500">Nenhuma sugestão retornada. Tente reformular o título ou mudar a editoria.</p>';
         return;
       }
 
-      let candidates;
-      try {
-        candidates = JSON.parse(raw);
-      } catch {
-        // tenta recuperar JSON de dentro do texto
-        const match = raw?.match(/\[[\s\S]*\]/);
-        candidates = match ? JSON.parse(match[0]) : [];
-      }
-      candidates = (candidates || []).map(s=>String(s)).filter(Boolean);
-      candidates = dedup(candidates, 0.85).slice(0, 10);
+      const list = document.createElement("div");
+      list.className = "space-y-3";
 
-      if (!candidates.length){ toast('Nenhum candidato gerado'); return; }
+      lines.forEach((line, idx) => {
+        const card = document.createElement("article");
+        card.className =
+          "rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-shadow text-sm";
 
-      // 3) Self-check (LLM) — baratinho
-      let checks = [];
-      try {
-        const selfUser = buildSelfCheckPrompt({title, keywords, candidates});
-        const rawCheck = await openAIChat({messages: [buildSystemPrompt(), selfUser], apiKey, temperature: 0.0, max_tokens: 220});
-        checks = JSON.parse(rawCheck);
-      } catch (e) {
-        // se falhar, usa somente validador local
-        checks = candidates.map(c => localValidate(c, keywords, strict));
-      }
+        const clean = line.replace(/^\d+\.\s*/, "").trim();
+        const [title, meta] = clean.split(/—| - /);
 
-      // 4) Validação local adicional + score
-      const scored = candidates.map((text, i) => {
-        const sc = checks[i] && typeof checks[i].ok === 'boolean' ? checks[i] : localValidate(text, keywords, strict);
-        if (!sc.ok) return null;
-        const score = totalScore(text, keywords);
-        return {text, score, reasons: explain(text, keywords)};
-      }).filter(Boolean);
+        const titleEl = document.createElement("h3");
+        titleEl.className = "font-semibold";
+        titleEl.textContent = (title || clean).trim();
 
-      // filtros finais
-      const uniq = [];
-      for (const item of scored){
-        if (uniq.every(x => jaccard(item.text, x.text) < 0.8)) uniq.push(item);
-      }
+        const metaEl = document.createElement("p");
+        metaEl.className = "text-xs text-slate-500 mt-1";
+        metaEl.textContent = meta ? meta.trim() : "Sugestão de título otimizado para Discover.";
 
-      uniq.sort((a,b)=>b.score - a.score || a.text.length - b.text.length);
+        const actions = document.createElement("div");
+        actions.className = "mt-2 flex gap-2";
 
-      const top = uniq.slice(0,3);
-      const others = uniq.slice(3);
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className =
+          "inline-flex items-center rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50";
+        copyBtn.textContent = "Copiar título";
+        copyBtn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(titleEl.textContent);
+            $("#status").textContent = "Título copiado!";
+            setTimeout(() => {
+              $("#status").textContent = "";
+            }, 2000);
+          } catch {
+            showError("Não foi possível copiar para a área de transferência.");
+          }
+        };
 
-      renderResults({top, others, keywords});
+        actions.appendChild(copyBtn);
+        card.appendChild(titleEl);
+        card.appendChild(metaEl);
+        card.appendChild(actions);
+        list.appendChild(card);
+      });
+
+      container.appendChild(list);
     }
 
-    // ===== Events =====
-    $('#btnGenerate').addEventListener('click', generate);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== $('#title')) { e.preventDefault(); $('#title').focus(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generate(); }
+    async function generate() {
+      const apiKey = $("#apikey").value.trim();
+      const title = $("#title").value.trim();
+      const type = $("#type").value.trim();
+      const aud = $("#aud").value.trim();
+      const strict = $("#strictMode").checked;
+
+      if (!apiKey) {
+        showError("Informe sua OpenAI API key.");
+        $("#apikey").focus();
+        return;
+      }
+      if (!title) {
+        showError("Cole o título original.");
+        $("#title").focus();
+        return;
+      }
+
+      setLoading(true);
+      $("#status").classList.remove("text-red-600");
+      $("#status").classList.add("text-slate-500");
+
+      try {
+        const systemPrompt = `
+Você é um editor de títulos especialista em Google Discover para um grande portal de notícias brasileiro.
+Seu objetivo é criar títulos altamente clicáveis, mas sem clickbait barato, mantendo clareza, objetividade e aderência ao conteúdo.
+
+Regras importantes:
+- Escreva em português do Brasil, em tom jornalístico.
+- Evite termos vazios como "você não vai acreditar", "chocante", "bomba", "imperdível".
+- Use números quando fizer sentido (ex.: 5 dicas, 3 sinais, etc.), mas só se forem críveis.
+- Seja específico sobre o benefício ou o conflito da matéria.
+- Mantenha os títulos com, em geral, até ~70 caracteres (pode variar um pouco se necessário).
+- Ajuste o título ao formato de Discover, mas pensando também em bom desempenho na busca tradicional.
+- Considere a editoria sugerida (lista, receita, galeria de fotos, vídeo, serviço/alerta, notícia quente etc.) ao construir o ângulo.
+
+Formato de resposta:
+- Responda APENAS com uma lista numerada em markdown (1., 2., 3., ...).
+- Cada item deve ter este formato:
+  1. TÍTULO SUGERIDO — Editorias mais adequadas: editoria 1; editoria 2
+        `.trim();
+
+        const userPromptLines = [
+          `Título original: "${title}".`,
+          type ? `Tipo de conteúdo / editoria principal: ${type}.` : "",
+          aud ? `Público-alvo / contexto: ${aud}.` : "",
+          "Gere entre 3 e 6 títulos alternativos seguindo as regras."
+        ].filter(Boolean);
+
+        const body = {
+          model: DEFAULT_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPromptLines.join("\n") }
+          ],
+          temperature: strict ? 0.5 : 0.9,
+          max_tokens: 600
+        };
+
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error(errText);
+          throw new Error("Erro na chamada à API. Verifique a chave, o modelo e o saldo da conta.");
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || "";
+        const lines = content
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => /^\d+\./.test(l));
+
+        renderResults(lines);
+      } catch (err):
+        console.error(err);
+        showError(err.message || "Erro ao gerar sugestões. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    document.getElementById("titleForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      generate();
     });
 
+    document.getElementById("title").addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("titleForm").requestSubmit();
+      }
+    });
   </script>
 </body>
 </html>
